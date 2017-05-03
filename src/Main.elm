@@ -1,9 +1,12 @@
 import Html exposing (..)
+import Html.Events exposing (..)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Dict
 import List exposing (concatMap)
 import Maybe exposing (withDefault)
+import Result
+import String
 
 
 main : Program Never Model Msg
@@ -20,7 +23,7 @@ main =
 
 
 type alias Rules =
-    Dict.Dict Char (List Char)
+    Dict.Dict String (List String)
 
 
 type alias Model =
@@ -28,22 +31,20 @@ type alias Model =
     , svgWidth : Float
     , svgHeight : Float
     , lineDelta : Float
-    , angleDelta : Float
     , iterations: Int
-    , axiom : List Char
+    , instructions : List String
     , rules : Rules
     }
 
 initialModel : Model
 initialModel =
-    { angle = 45
+    { angle = 45.0
     , svgWidth = 800
     , svgHeight = 800
-    , lineDelta = 30.0
-    , angleDelta = 45.0
-    , iterations = 10
-    , axiom = [ 'F', 'X' ]
-    , rules = Dict.fromList [ ('X', String.toList "[-FX]+FX")]
+    , lineDelta = 150.0
+    , iterations = 0
+    , instructions = [ "F", "X" ]
+    , rules = Dict.fromList [ ("X", ["#", ".6", "[", "-", "F", "X", "]", "+", "F", "X"])]
     }
 
 init : (Model, Cmd Msg)
@@ -54,6 +55,17 @@ init =
 -- Update
 
 
+iterateLSystem : Int -> Rules -> List String -> List String
+iterateLSystem iterations rules instructions =
+    if iterations == 0 then
+        instructions
+    else
+        let
+            newInstructions = concatMap (\c -> withDefault [c] (Dict.get c rules)) instructions
+        in
+            iterateLSystem (iterations - 1) rules newInstructions
+
+
 type Msg
     = Iterate
 
@@ -62,7 +74,10 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         Iterate ->
-            ({ model | iterations = model.iterations + 1 }, Cmd.none)
+            ({ model
+             | iterations = model.iterations + 1
+             , instructions = (iterateLSystem (model.iterations + 1) model.rules model.instructions)
+             }, Cmd.none)
 
 
 -- Subscriptions
@@ -74,17 +89,6 @@ subscriptions model =
 
 
 -- View
-
-
-iterateLSystem : Int -> Rules -> List Char -> List Char
-iterateLSystem iterations rules str =
-    if iterations == 0 then
-        str
-    else
-        let
-            newStr = concatMap (\c -> withDefault [c] (Dict.get c rules)) str
-        in
-            iterateLSystem (iterations - 1) rules newStr
 
 
 type alias Cursor =
@@ -99,7 +103,7 @@ coordsFromAngleAndLength : (Float, Float) -> Float -> Float -> (Float, Float)
 coordsFromAngleAndLength coords angle length =
     let
         (x, y) = coords
-        angleRadians = angle * (pi / 180)
+        angleRadians = degrees angle
     in
         (x + (length * cos angleRadians), y - (length * sin angleRadians))
 
@@ -114,57 +118,82 @@ drawLine startCoords angle length =
              , y1 (toString startY)
              , x2 (toString endX)
              , y2 (toString endY)
-             , Svg.Attributes.style "stroke:rgb(255,0,0);stroke-width:2"
+             , Svg.Attributes.style "stroke:rgb(0,128,0);stroke-width:2"
              ] []
 
 
 
-drawLSystem : Float -> Float -> Cursor -> List Char -> Svg Msg
+drawLSystem : Float -> Float -> Cursor -> List String -> Svg Msg
 drawLSystem w h initialCursor instructions =
-    svg [width (toString w), height (toString h)] (drawLSystemHelper instructions initialCursor [] [])
+    svg [ Svg.Attributes.width (toString w)
+        , Svg.Attributes.height (toString h)
+        ] (drawLSystemHelper instructions initialCursor [] [])
 
 
-drawLSystemHelper : List Char -> Cursor -> List Cursor -> List (Svg Msg)-> List (Svg Msg)
+drawLSystemHelper : List String -> Cursor -> List Cursor -> List (Svg Msg)-> List (Svg Msg)
 drawLSystemHelper instructions cursor cursorStack lineAcc =
     case (List.head instructions) of
         Nothing -> lineAcc
-        Just 'F' ->
+        Just "F" ->
             let
-                newCoords = coordsFromAngleAndLength cursor.coords cursor.angleDelta cursor.lineDelta
+                newCoords = coordsFromAngleAndLength cursor.coords cursor.angle cursor.lineDelta
                 newCursor = { cursor | coords = newCoords }
-                newLine = drawLine cursor.coords cursor.angleDelta cursor.lineDelta
+                newLine = drawLine cursor.coords cursor.angle cursor.lineDelta
                 newLineAcc = newLine :: lineAcc
             in
                 drawLSystemHelper (withDefault [] (List.tail instructions)) newCursor cursorStack newLineAcc
-        Just 'G' ->
+        Just "G" ->
             let
-                newCoords = coordsFromAngleAndLength cursor.coords cursor.angleDelta cursor.lineDelta
+                newCoords = coordsFromAngleAndLength cursor.coords cursor.angle cursor.lineDelta
                 newCursor = { cursor | coords = newCoords }
             in
                 drawLSystemHelper (withDefault [] (List.tail instructions)) newCursor cursorStack lineAcc
-        Just '+' ->
+        Just "+" ->
             let
                 newAngle = cursor.angle + cursor.angleDelta
                 newCursor = { cursor | angle = newAngle }
             in
                 drawLSystemHelper (withDefault [] (List.tail instructions)) newCursor cursorStack lineAcc
-        Just '-' ->
+        Just "-" ->
             let
                 newAngle = cursor.angle - cursor.angleDelta
                 newCursor = { cursor | angle = newAngle }
             in
                 drawLSystemHelper (withDefault [] (List.tail instructions)) newCursor cursorStack lineAcc
-        Just '[' ->
+        Just "[" ->
             let
                 newCursorStack = cursor :: cursorStack
             in
                 drawLSystemHelper (withDefault [] (List.tail instructions)) cursor newCursorStack lineAcc
-        Just ']' ->
+        Just "]" ->
             let
                 newCursor = withDefault cursor (List.head cursorStack)
                 newCursorStack = withDefault [] (List.tail cursorStack)
             in
                 drawLSystemHelper (withDefault [] (List.tail instructions)) newCursor newCursorStack lineAcc
+        Just "#" ->
+            let
+                multiplier =
+                    case List.head (withDefault [] (List.tail instructions)) of
+                        Just str -> Result.withDefault 1.0 (String.toFloat str)
+                        Nothing -> 1.0
+                newInstructions = (withDefault [] (List.tail (withDefault [] (List.tail instructions))))
+                newLineDelta = cursor.lineDelta * multiplier
+                newCursor = { cursor | lineDelta = newLineDelta }
+            in
+                drawLSystemHelper newInstructions newCursor cursorStack lineAcc
+        Just "@" ->
+            let
+                multiplier =
+                    case List.head (withDefault [] (List.tail instructions)) of
+                        Just str -> Result.withDefault 1.0 (String.toFloat str)
+                        Nothing -> 1.0
+                newInstructions = (withDefault [] (List.tail (withDefault [] (List.tail instructions))))
+                newAngleDelta = cursor.angleDelta * multiplier
+                newCursor = { cursor | angleDelta = newAngleDelta }
+            in
+                drawLSystemHelper newInstructions newCursor cursorStack lineAcc
+ 
         _ ->
             drawLSystemHelper (withDefault [] (List.tail instructions)) cursor cursorStack lineAcc
 
@@ -173,15 +202,15 @@ view model =
     let
         initialCursor =
             { coords = (model.svgWidth / 2, model.svgHeight)
-            , angle = model.angle
+            , angle = 90.0
             , lineDelta = model.lineDelta
-            , angleDelta = model.angleDelta
+            , angleDelta = model.angle
             }
         svgHeight = model.svgHeight
         svgWidth = model.svgWidth
-        lSystem = iterateLSystem model.iterations model.rules model.axiom
     in
         div [
             ]
-            [ (drawLSystem svgWidth svgHeight initialCursor lSystem)
+            [ (drawLSystem svgWidth svgHeight initialCursor model.instructions)
+            , button [ onClick Iterate ] [ Html.text "Iterate L-System" ]
             ]
