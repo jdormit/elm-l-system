@@ -23,7 +23,7 @@ main =
 
 
 type alias Rules =
-    Dict.Dict String (List String)
+    Dict.Dict String String
 
 
 type alias Model =
@@ -32,8 +32,8 @@ type alias Model =
     , svgHeight : Float
     , lineDelta : Float
     , iterations : Int
-    , axiom : List String
-    , instructions : List String
+    , axiom : String
+    , instructions : String
     , rules : Rules
     }
 
@@ -44,9 +44,9 @@ initialModel =
     , svgHeight = 800
     , lineDelta = 150.0
     , iterations = 0
-    , axiom = [ "F", "X" ]
-    , instructions = [ ]
-    , rules = Dict.fromList [ ("X", ["#", ".6", "[", "-", "F", "X", "]", "+", "F", "X"])]
+    , axiom = "FX"
+    , instructions = ""
+    , rules = Dict.fromList [ ("X", "#(.6)[@(.6)-FX]+FX")]
     }
 
 init : (Model, Cmd Msg)
@@ -57,15 +57,30 @@ init =
 -- Update
 
 
-iterateLSystem : Int -> Rules -> List String -> List String
+iterateLSystem : Int -> Rules -> String -> String
 iterateLSystem iterations rules instructions =
     if iterations == 0 then
         instructions
     else
         let
-            newInstructions = concatMap (\c -> withDefault [c] (Dict.get c rules)) instructions
+            newInstructions = generateNewInstructions rules instructions
         in
             iterateLSystem (iterations - 1) rules newInstructions
+
+
+generateNewInstructions : Rules -> String -> String
+generateNewInstructions rules instructions =
+    generateNewInstructionsHelper rules (String.toList instructions) []
+generateNewInstructionsHelper : Rules -> List Char -> List String -> String
+generateNewInstructionsHelper rules instructionsList acc =
+    case List.head instructionsList of
+        Nothing ->
+            List.foldl String.append "" acc
+        Just instruction ->
+            let
+                newInstruction = withDefault (String.fromChar instruction) (Dict.get (String.fromChar instruction) rules)
+            in
+                generateNewInstructionsHelper rules (withDefault [] (List.tail instructionsList)) (newInstruction :: acc)
 
 
 type Msg
@@ -204,6 +219,27 @@ drawLSystemHelper instructions cursor cursorStack lineAcc =
         _ ->
             drawLSystemHelper (withDefault [] (List.tail instructions)) cursor cursorStack lineAcc
 
+
+parseInstructions : String -> List String
+parseInstructions str =
+    parseInstructionsHelper str []
+
+parseInstructionsHelper : String -> List String -> List String
+parseInstructionsHelper str acc =
+    if String.isEmpty str then
+        List.reverse acc
+    else
+        case String.slice 0 1 str of
+            "(" ->
+                let
+                    closeParenIndex = withDefault 1 (List.head (String.indexes ")" str))
+                    enclosedSubstring = String.slice 1 closeParenIndex str
+                    newStr = String.slice (closeParenIndex + 1) (String.length str) str
+                in
+                    parseInstructionsHelper newStr (enclosedSubstring :: acc)
+            s -> parseInstructionsHelper (String.slice 1 (String.length str) str) (s :: acc)
+
+
 view : Model -> Html Msg
 view model =
     let
@@ -218,7 +254,7 @@ view model =
     in
         div [
             ]
-            [ (drawLSystem svgWidth svgHeight initialCursor model.instructions)
+            [ (drawLSystem svgWidth svgHeight initialCursor (parseInstructions model.instructions))
             , button [ onClick Iterate ] [ Html.text "Iterate L-System" ]
             , button [ onClick Reset ] [ Html.text "Reset" ]
             ]
