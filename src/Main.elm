@@ -1,4 +1,5 @@
 import Html exposing (..)
+import Html.Attributes
 import Html.Events exposing (..)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -104,6 +105,7 @@ generateNewInstructionsHelper rules instructionsList acc =
 type Msg
     = Iterate
     | Reset
+    | Preset Model
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -119,6 +121,8 @@ update msg model =
              | iterations = 0
              , instructions = model.axiom
              }, Cmd.none)
+        Preset preset ->
+            (preset, Cmd.none)
 
 
 -- Subscriptions
@@ -258,6 +262,15 @@ parseInstructionsHelper str acc =
             s -> parseInstructionsHelper (String.slice 1 (String.length str) str) (s :: acc)
 
 
+radio : String -> msg -> Html msg
+radio value msg =
+  label
+    [ Html.Attributes.style [("padding", "20px")]
+    ]
+    [ input [ type_ "radio", name "font-size", onClick msg ] []
+    , Html.text value
+    ]
+
 view : Model -> Html Msg
 view model =
     let
@@ -275,4 +288,6 @@ view model =
             [ (drawLSystem svgWidth svgHeight initialCursor (parseInstructions model.instructions))
             , button [ onClick Iterate ] [ Html.text "Iterate L-System" ]
             , button [ onClick Reset ] [ Html.text "Reset" ]
+            , fieldset [] [ radio "Tree" (Preset presetTree)
+                          , radio "Dragon Curve" (Preset presetDragonCurve)]
             ]
