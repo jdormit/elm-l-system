@@ -30,6 +30,8 @@ type alias Model =
     { angle : Float
     , svgWidth : Float
     , svgHeight : Float
+    , startX : Float
+    , startY : Float
     , lineDelta : Float
     , iterations : Int
     , axiom : String
@@ -37,21 +39,37 @@ type alias Model =
     , rules : Rules
     }
 
-initialModel : Model
-initialModel =
+presetTree : Model
+presetTree =
     { angle = 45.0
     , svgWidth = 800
     , svgHeight = 800
+    , startX = 400
+    , startY = 800
     , lineDelta = 150.0
     , iterations = 0
     , axiom = "FX"
-    , instructions = ""
-    , rules = Dict.fromList [ ("X", "#(.6)[@(.6)-FX]+FX")]
+    , instructions = "FX"
+    , rules = Dict.fromList [ ("X", "#(.7)[@(.6)-FX]+FX") ]
+    }
+
+presetDragonCurve : Model
+presetDragonCurve =
+    { angle = 90.0
+    , svgWidth = 1000
+    , svgHeight = 950
+    , startX = 700
+    , startY = 500
+    , lineDelta = 10.0
+    , iterations = 0
+    , axiom = "FX"
+    , instructions = "FX"
+    , rules = Dict.fromList [ ("X", "X-YF-"), ("Y", "+FX+Y"), ("F", "") ]
     }
 
 init : (Model, Cmd Msg)
 init =
-    ({initialModel | instructions = initialModel.axiom}, Cmd.none)
+    (presetTree, Cmd.none)
 
 
 -- Update
@@ -244,7 +262,7 @@ view : Model -> Html Msg
 view model =
     let
         initialCursor =
-            { coords = (model.svgWidth / 2, model.svgHeight)
+            { coords = (model.startX, model.startY)
             , angle = 90.0
             , lineDelta = model.lineDelta
             , angleDelta = model.angle
