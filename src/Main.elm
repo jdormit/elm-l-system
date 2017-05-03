@@ -31,7 +31,8 @@ type alias Model =
     , svgWidth : Float
     , svgHeight : Float
     , lineDelta : Float
-    , iterations: Int
+    , iterations : Int
+    , axiom : List String
     , instructions : List String
     , rules : Rules
     }
@@ -43,13 +44,14 @@ initialModel =
     , svgHeight = 800
     , lineDelta = 150.0
     , iterations = 0
-    , instructions = [ "F", "X" ]
+    , axiom = [ "F", "X" ]
+    , instructions = [ ]
     , rules = Dict.fromList [ ("X", ["#", ".6", "[", "-", "F", "X", "]", "+", "F", "X"])]
     }
 
 init : (Model, Cmd Msg)
 init =
-    (initialModel, Cmd.none)
+    ({initialModel | instructions = initialModel.axiom}, Cmd.none)
 
 
 -- Update
@@ -76,7 +78,7 @@ update msg model =
         Iterate ->
             ({ model
              | iterations = model.iterations + 1
-             , instructions = (iterateLSystem (model.iterations + 1) model.rules model.instructions)
+             , instructions = (iterateLSystem (model.iterations + 1) model.rules model.axiom)
              }, Cmd.none)
 
 
