@@ -1,0 +1,48 @@
+Based on http://www.cgjennings.ca/toybox/lsystems/
+
+* Goal
+Create an L-System that represents a plant. Render it with SVG graphics.
+
+* L-System rules
+preamble: angle
+variables: F 
+constants: + - [ ]
+axiom: F
+production rules: F = F[-F]+F
+
+* Rendering the system
+The system is represented as a list of characters - F, +, -, [, ] are the ones with special meaning. All others should be ignored. 
+
+I will use a "turtle walk" algorithm to render the system. This means I will keep track of a turtle's (x, y) coordinates. When the turtle walks, it is given a start coordinate, an angle, and a length. It renders an SVG from the start coordinate the end coordinates determined by the angle and the length.
+
+Given an 800 x 800 SVG, the "turtle" will start at (400, 800) with an angle of 90 (facing up). Each F will cause the turtle to draw a line in the direction that it is going. For now, it will draw a line of fixed length, but I will need to make a command in the language to change the line length by a multiple.
+
+There are two pieces of state to keep track of while the L-System is being rendered: the cursor, defined by (x, y) coordinates, a facing, and a line length; and a stack of cursors to allow the system to branch. 
+
+Here's what the cursor looks like:
+{ x : Float
+, y : Float
+, facing : Float
+, lineDelta : Float   -- The length that the turtle will move given a 'F' or 'G' instruction
+, angleDelta : Float  -- The amount that the facing will change given a '-' or a '+' instruction
+}
+
+The algorithm goes like this:
+
+    for each instruction in the system:
+        case instruction of
+            F -> draw a line from (x, y) to the new coordinates defined by <lineDelta> and <facing>. Update the cursor position
+            G -> Move the cursor forward by <lineDelta> and <facing>, but don't draw a line
+            + -> Add <angleDelta> to the cursor's facing
+            - -> Subtract <angleDelta> from the cursor's facing
+            [ -> Push the cursor's definition onto the cursor stack
+            ] -> Pop a definition from the top of the stack and set the cursor's definition to it
+            -- Eventually:
+            #<num> -> Multiply the <lineDelta> by <num>
+            @<num> -> Multiply the <facing> by <num>
+            
+
+The system is rendered as a list of <line> SVG elements. Each one has an x1, a y1, an x2, and a y2. For each element, the x1 and y2 are the x2 and y2 of the element before it. The x2 and y2 are determined based on the desired angle and length of the line.
+
+* Elm Architecture
+- the pattern only gets re-rendered when an Iterate message is passed to the update function
