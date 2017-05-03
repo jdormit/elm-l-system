@@ -101,7 +101,7 @@ coordsFromAngleAndLength coords angle length =
         (x, y) = coords
         angleRadians = angle * (pi / 180)
     in
-        (x + (length * cos angleRadians), y + (length * sin angleRadians))
+        (x + (length * cos angleRadians), y - (length * sin angleRadians))
 
 
 drawLine : (Float, Float) -> Float -> Float -> Svg Msg
