@@ -70,6 +70,7 @@ iterateLSystem iterations rules instructions =
 
 type Msg
     = Iterate
+    | Reset
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -79,6 +80,11 @@ update msg model =
             ({ model
              | iterations = model.iterations + 1
              , instructions = (iterateLSystem (model.iterations + 1) model.rules model.axiom)
+             }, Cmd.none)
+        Reset ->
+            ({ model
+             | iterations = 0
+             , instructions = model.axiom
              }, Cmd.none)
 
 
@@ -195,7 +201,6 @@ drawLSystemHelper instructions cursor cursorStack lineAcc =
                 newCursor = { cursor | angleDelta = newAngleDelta }
             in
                 drawLSystemHelper newInstructions newCursor cursorStack lineAcc
- 
         _ ->
             drawLSystemHelper (withDefault [] (List.tail instructions)) cursor cursorStack lineAcc
 
@@ -215,4 +220,5 @@ view model =
             ]
             [ (drawLSystem svgWidth svgHeight initialCursor model.instructions)
             , button [ onClick Iterate ] [ Html.text "Iterate L-System" ]
+            , button [ onClick Reset ] [ Html.text "Reset" ]
             ]
