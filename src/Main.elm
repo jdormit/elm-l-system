@@ -1,3 +1,5 @@
+module Main exposing (..)
+
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -18,6 +20,7 @@ main =
         , update = update
         , subscriptions = subscriptions
         }
+
 
 
 -- Model
@@ -62,8 +65,9 @@ initialModel =
     , iterations = 0
     , axiom = "FX"
     , instructions = "FX"
-    , rules = Dict.fromList [ ("X", "#(.7)[@(.6)-FX]+FX") ]
+    , rules = Dict.fromList [ ( "X", "#(.7)[@(.6)-FX]+FX" ) ]
     }
+
 
 presetTree : Preset
 presetTree =
@@ -72,8 +76,9 @@ presetTree =
     , startY = 890
     , initialLineLength = 150.0
     , axiom = "FX"
-    , rules = Dict.fromList [ ("X", "#(.7)[@(.6)-FX]+FX") ]
+    , rules = Dict.fromList [ ( "X", "#(.7)[@(.6)-FX]+FX" ) ]
     }
+
 
 presetDragonCurve : Preset
 presetDragonCurve =
@@ -82,12 +87,14 @@ presetDragonCurve =
     , startY = 450
     , initialLineLength = 10.0
     , axiom = "FX"
-    , rules = Dict.fromList [ ("X", "X-YF-"), ("Y", "+FX+Y"), ("F", "") ]
+    , rules = Dict.fromList [ ( "X", "X-YF-" ), ( "Y", "+FX+Y" ), ( "F", "" ) ]
     }
 
-init : (Model, Cmd Msg)
+
+init : ( Model, Cmd Msg )
 init =
     update (SetPreset presetTree) initialModel
+
 
 
 -- Update
@@ -99,7 +106,8 @@ iterateLSystem iterations rules instructions =
         instructions
     else
         let
-            newInstructions = generateNewInstructions rules instructions
+            newInstructions =
+                generateNewInstructions rules instructions
         in
             iterateLSystem (iterations - 1) rules newInstructions
 
@@ -108,14 +116,17 @@ generateNewInstructions : Rules -> String -> String
 generateNewInstructions rules instructions =
     generateNewInstructionsHelper rules (String.toList instructions) []
 
+
 generateNewInstructionsHelper : Rules -> List Char -> List String -> String
 generateNewInstructionsHelper rules instructionsList acc =
     case List.head instructionsList of
         Nothing ->
             List.foldl String.append "" acc
+
         Just instruction ->
             let
-                newInstruction = withDefault (String.fromChar instruction) (Dict.get (String.fromChar instruction) rules)
+                newInstruction =
+                    withDefault (String.fromChar instruction) (Dict.get (String.fromChar instruction) rules)
             in
                 generateNewInstructionsHelper rules (withDefault [] (List.tail instructionsList)) (newInstruction :: acc)
 
@@ -125,64 +136,85 @@ type Msg
     | Reset
     | SetPreset Preset
     | SetAxiom String
-    | SetRule (String, String)
+    | SetRule ( String, String )
     | SetAngle String
     | SetInitialLength String
     | SetStartX String
     | SetStartY String
 
-update : Msg -> Model -> (Model, Cmd Msg)
+
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         SetIterations value ->
             let
-                iter = Result.withDefault 0 (String.toInt value)
+                iter =
+                    Result.withDefault 0 (String.toInt value)
             in
-                ({ model
-                     | iterations = iter
-                     , instructions = (iterateLSystem iter model.rules model.axiom)
-                 }, Cmd.none)
+                ( { model
+                    | iterations = iter
+                    , instructions = (iterateLSystem iter model.rules model.axiom)
+                  }
+                , Cmd.none
+                )
+
         SetAxiom newAxiom ->
             update Reset { model | axiom = newAxiom }
-        SetRule (key, rule) ->
+
+        SetRule ( key, rule ) ->
             let
-                newRules = Dict.insert key rule model.rules
+                newRules =
+                    Dict.insert key rule model.rules
             in
                 update Reset { model | rules = newRules }
+
         SetAngle angleVal ->
             let
-                newAngle = Result.withDefault 0 (String.toFloat angleVal)
+                newAngle =
+                    Result.withDefault 0 (String.toFloat angleVal)
             in
                 update Reset { model | angle = newAngle }
+
         SetInitialLength lenVal ->
             let
-                newLength = Result.withDefault 0 (String.toFloat lenVal)
+                newLength =
+                    Result.withDefault 0 (String.toFloat lenVal)
             in
                 update Reset { model | initialLineLength = newLength }
+
         SetStartX xVal ->
             let
-                newStartX = Result.withDefault 700.0 (String.toFloat xVal)
+                newStartX =
+                    Result.withDefault 700.0 (String.toFloat xVal)
             in
                 update Reset { model | startX = newStartX }
+
         SetStartY yVal ->
             let
-                newStartY = Result.withDefault 890.0 (String.toFloat yVal)
+                newStartY =
+                    Result.withDefault 890.0 (String.toFloat yVal)
             in
                 update Reset { model | startY = newStartY }
+
         Reset ->
-            ({ model
-             | iterations = 0
-             , instructions = model.axiom
-             }, Cmd.none)
+            ( { model
+                | iterations = 0
+                , instructions = model.axiom
+              }
+            , Cmd.none
+            )
+
         SetPreset preset ->
-            update Reset { model
-             | angle = preset.angle
-             , startX = preset.startX
-             , startY = preset.startY
-             , initialLineLength = preset.initialLineLength
-             , axiom = preset.axiom
-             , rules = preset.rules
-             }
+            update Reset
+                { model
+                    | angle = preset.angle
+                    , startX = preset.startX
+                    , startY = preset.startY
+                    , initialLineLength = preset.initialLineLength
+                    , axiom = preset.axiom
+                    , rules = preset.rules
+                }
+
 
 
 -- Subscriptions
@@ -193,111 +225,169 @@ subscriptions model =
     Sub.none
 
 
+
 -- View
 
 
 type alias Cursor =
-    { coords : (Float, Float)
+    { coords : ( Float, Float )
     , angle : Float
     , lineLength : Float
     , angleDelta : Float
     }
 
 
-coordsFromAngleAndLength : (Float, Float) -> Float -> Float -> (Float, Float)
+coordsFromAngleAndLength : ( Float, Float ) -> Float -> Float -> ( Float, Float )
 coordsFromAngleAndLength coords angle length =
     let
-        (x, y) = coords
-        angleRadians = degrees angle
+        ( x, y ) =
+            coords
+
+        angleRadians =
+            degrees angle
     in
-        (x + (length * cos angleRadians), y - (length * sin angleRadians))
+        ( x + (length * cos angleRadians), y - (length * sin angleRadians) )
 
 
-drawLine : (Float, Float) -> Float -> Float -> Svg Msg
+drawLine : ( Float, Float ) -> Float -> Float -> Svg Msg
 drawLine startCoords angle length =
     let
-        (startX, startY) = startCoords
-        (endX, endY) = coordsFromAngleAndLength startCoords angle length
-    in
-        line [ x1 (toString startX)
-             , y1 (toString startY)
-             , x2 (toString endX)
-             , y2 (toString endY)
-             , Svg.Attributes.style "stroke:rgb(0,128,0);stroke-width:2"
-             ] []
+        ( startX, startY ) =
+            startCoords
 
+        ( endX, endY ) =
+            coordsFromAngleAndLength startCoords angle length
+    in
+        line
+            [ x1 (toString startX)
+            , y1 (toString startY)
+            , x2 (toString endX)
+            , y2 (toString endY)
+            , Svg.Attributes.style "stroke:rgb(0,128,0);stroke-width:2"
+            ]
+            []
 
 
 drawLSystem : Float -> Float -> Cursor -> List String -> Svg Msg
 drawLSystem w h initialCursor instructions =
-    svg [ Svg.Attributes.width (toString w)
+    svg
+        [ Svg.Attributes.width (toString w)
         , Svg.Attributes.height (toString h)
-        ] (drawLSystemHelper instructions initialCursor [] [])
+        ]
+        (drawLSystemHelper instructions initialCursor [] [])
 
 
-drawLSystemHelper : List String -> Cursor -> List Cursor -> List (Svg Msg)-> List (Svg Msg)
+drawLSystemHelper : List String -> Cursor -> List Cursor -> List (Svg Msg) -> List (Svg Msg)
 drawLSystemHelper instructions cursor cursorStack lineAcc =
     case (List.head instructions) of
-        Nothing -> lineAcc
+        Nothing ->
+            lineAcc
+
         Just "F" ->
             let
-                newCoords = coordsFromAngleAndLength cursor.coords cursor.angle cursor.lineLength
-                newCursor = { cursor | coords = newCoords }
-                newLine = drawLine cursor.coords cursor.angle cursor.lineLength
-                newLineAcc = newLine :: lineAcc
+                newCoords =
+                    coordsFromAngleAndLength cursor.coords cursor.angle cursor.lineLength
+
+                newCursor =
+                    { cursor | coords = newCoords }
+
+                newLine =
+                    drawLine cursor.coords cursor.angle cursor.lineLength
+
+                newLineAcc =
+                    newLine :: lineAcc
             in
                 drawLSystemHelper (withDefault [] (List.tail instructions)) newCursor cursorStack newLineAcc
+
         Just "G" ->
             let
-                newCoords = coordsFromAngleAndLength cursor.coords cursor.angle cursor.lineLength
-                newCursor = { cursor | coords = newCoords }
+                newCoords =
+                    coordsFromAngleAndLength cursor.coords cursor.angle cursor.lineLength
+
+                newCursor =
+                    { cursor | coords = newCoords }
             in
                 drawLSystemHelper (withDefault [] (List.tail instructions)) newCursor cursorStack lineAcc
+
         Just "+" ->
             let
-                newAngle = cursor.angle + cursor.angleDelta
-                newCursor = { cursor | angle = newAngle }
+                newAngle =
+                    cursor.angle + cursor.angleDelta
+
+                newCursor =
+                    { cursor | angle = newAngle }
             in
                 drawLSystemHelper (withDefault [] (List.tail instructions)) newCursor cursorStack lineAcc
+
         Just "-" ->
             let
-                newAngle = cursor.angle - cursor.angleDelta
-                newCursor = { cursor | angle = newAngle }
+                newAngle =
+                    cursor.angle - cursor.angleDelta
+
+                newCursor =
+                    { cursor | angle = newAngle }
             in
                 drawLSystemHelper (withDefault [] (List.tail instructions)) newCursor cursorStack lineAcc
+
         Just "[" ->
             let
-                newCursorStack = cursor :: cursorStack
+                newCursorStack =
+                    cursor :: cursorStack
             in
                 drawLSystemHelper (withDefault [] (List.tail instructions)) cursor newCursorStack lineAcc
+
         Just "]" ->
             let
-                newCursor = withDefault cursor (List.head cursorStack)
-                newCursorStack = withDefault [] (List.tail cursorStack)
+                newCursor =
+                    withDefault cursor (List.head cursorStack)
+
+                newCursorStack =
+                    withDefault [] (List.tail cursorStack)
             in
                 drawLSystemHelper (withDefault [] (List.tail instructions)) newCursor newCursorStack lineAcc
+
         Just "#" ->
             let
                 multiplier =
                     case List.head (withDefault [] (List.tail instructions)) of
-                        Just str -> Result.withDefault 1.0 (String.toFloat str)
-                        Nothing -> 1.0
-                newInstructions = (withDefault [] (List.tail (withDefault [] (List.tail instructions))))
-                newLineDelta = cursor.lineLength * multiplier
-                newCursor = { cursor | lineLength = newLineDelta }
+                        Just str ->
+                            Result.withDefault 1.0 (String.toFloat str)
+
+                        Nothing ->
+                            1.0
+
+                newInstructions =
+                    (withDefault [] (List.tail (withDefault [] (List.tail instructions))))
+
+                newLineDelta =
+                    cursor.lineLength * multiplier
+
+                newCursor =
+                    { cursor | lineLength = newLineDelta }
             in
                 drawLSystemHelper newInstructions newCursor cursorStack lineAcc
+
         Just "@" ->
             let
                 multiplier =
                     case List.head (withDefault [] (List.tail instructions)) of
-                        Just str -> Result.withDefault 1.0 (String.toFloat str)
-                        Nothing -> 1.0
-                newInstructions = (withDefault [] (List.tail (withDefault [] (List.tail instructions))))
-                newAngleDelta = cursor.angleDelta * multiplier
-                newCursor = { cursor | angleDelta = newAngleDelta }
+                        Just str ->
+                            Result.withDefault 1.0 (String.toFloat str)
+
+                        Nothing ->
+                            1.0
+
+                newInstructions =
+                    (withDefault [] (List.tail (withDefault [] (List.tail instructions))))
+
+                newAngleDelta =
+                    cursor.angleDelta * multiplier
+
+                newCursor =
+                    { cursor | angleDelta = newAngleDelta }
             in
                 drawLSystemHelper newInstructions newCursor cursorStack lineAcc
+
         _ ->
             drawLSystemHelper (withDefault [] (List.tail instructions)) cursor cursorStack lineAcc
 
@@ -305,6 +395,7 @@ drawLSystemHelper instructions cursor cursorStack lineAcc =
 parseInstructions : String -> List String
 parseInstructions str =
     parseInstructionsHelper str []
+
 
 parseInstructionsHelper : String -> List String -> List String
 parseInstructionsHelper str acc =
@@ -314,96 +405,133 @@ parseInstructionsHelper str acc =
         case String.slice 0 1 str of
             "(" ->
                 let
-                    closeParenIndex = withDefault 1 (List.head (String.indexes ")" str))
-                    enclosedSubstring = String.slice 1 closeParenIndex str
-                    newStr = String.slice (closeParenIndex + 1) (String.length str) str
+                    closeParenIndex =
+                        withDefault 1 (List.head (String.indexes ")" str))
+
+                    enclosedSubstring =
+                        String.slice 1 closeParenIndex str
+
+                    newStr =
+                        String.slice (closeParenIndex + 1) (String.length str) str
                 in
                     parseInstructionsHelper newStr (enclosedSubstring :: acc)
-            s -> parseInstructionsHelper (String.slice 1 (String.length str) str) (s :: acc)
+
+            s ->
+                parseInstructionsHelper (String.slice 1 (String.length str) str) (s :: acc)
 
 
 radio : String -> msg -> Html msg
 radio value msg =
-  label
-    [ Html.Attributes.style [("padding", "20px")]
-    ]
-    [ input [ Html.Attributes.type_ "radio", Html.Attributes.name "font-size", onClick msg ] []
-    , Html.text value
-    ]
+    label
+        [ Html.Attributes.style [ ( "padding", "20px" ) ]
+        ]
+        [ input [ Html.Attributes.type_ "radio", Html.Attributes.name "font-size", onClick msg ] []
+        , Html.text value
+        ]
+
 
 view : Model -> Html Msg
 view model =
     let
         initialCursor =
-            { coords = (model.startX, model.startY)
+            { coords = ( model.startX, model.startY )
             , angle = 90.0
             , lineLength = model.initialLineLength
             , angleDelta = model.angle
             }
-        svgHeight = model.svgHeight
-        svgWidth = model.svgWidth
+
+        svgHeight =
+            model.svgHeight
+
+        svgWidth =
+            model.svgWidth
     in
-        div [
-            ]
+        div
+            []
             [ (drawLSystem svgWidth svgHeight initialCursor (parseInstructions model.instructions))
-            , fieldset [] [ legend [] [ Html.text "Control Panel" ]
-                          , radio "Tree" (SetPreset presetTree)
-                          , radio "Dragon Curve" (SetPreset presetDragonCurve)
-                          , label [ for "iterations"
-                                  ]
-                                  [ Html.text ("Iterations: " ++ (toString model.iterations))
-                                  ]
-                          , input [ Html.Attributes.type_ "range"
-                                  , defaultValue "0"
-                                  , value (toString model.iterations)
-                                  , Html.Attributes.min "0"
-                                  , Html.Attributes.max "15"
-                                  , Html.Attributes.name "iterations"
-                                  , onInput SetIterations
-                                  ] []
-                          , label [ for "axiom" ] [ Html.text "Axiom" ]
-                          , input [ Html.Attributes.type_ "text"
-                                  , value model.axiom
-                                  , Html.Attributes.name "axiom"
-                                  , onInput SetAxiom
-                                  ] []
-                          , label [ for "angle" ] [ Html.text "Initial Angle" ]
-                          , input [ Html.Attributes.type_ "text"
-                                  , value (toString model.angle)
-                                  , Html.Attributes.name "angle"
-                                  , onInput SetAngle
-                                  ] []
-                          , label [ for "length" ] [ Html.text "Initial Length" ]
-                          , input [ Html.Attributes.type_ "text"
-                                  , value (toString model.initialLineLength)
-                                  , Html.Attributes.name "length"
-                                  , onInput SetInitialLength
-                                  ] []
-                          , label [ for "x" ] [ Html.text "Initial X-Coordinate" ]
-                          , input [ Html.Attributes.type_ "text"
-                                  , value (toString model.startX)
-                                  , Html.Attributes.name "x"
-                                  , onInput SetStartX
-                                  ] []
-                          , label [ for "y" ] [ Html.text "Initial Y-Coordinate" ]
-                          , input [ Html.Attributes.type_ "text"
-                                  , value (toString model.startY)
-                                  , Html.Attributes.name "y"
-                                  , onInput SetStartY
-                                  ] []
-                          , label [] [ Html.text "Rules" ]
-                          , ul [] (Dict.toList model.rules
-                                      |> List.map (\pair ->
-                                                   let
-                                                       (key, rule) = pair
-                                                   in
-                                                       li [] [ input [ Html.Attributes.type_ "text"
-                                                                     , value key
-                                                                     , onInput (\newKey -> (SetRule (newKey, rule)))
-                                                                     ] []
-                                                             , input [ Html.Attributes.type_ "text"
-                                                                     , value rule
-                                                                     , onInput (\newRule -> (SetRule (key, newRule)))
-                                                                     ] []]))
-                          ]
+            , fieldset []
+                [ legend [] [ Html.text "Control Panel" ]
+                , radio "Tree" (SetPreset presetTree)
+                , radio "Dragon Curve" (SetPreset presetDragonCurve)
+                , label
+                    [ for "iterations"
+                    ]
+                    [ Html.text ("Iterations: " ++ (toString model.iterations))
+                    ]
+                , input
+                    [ Html.Attributes.type_ "range"
+                    , defaultValue "0"
+                    , value (toString model.iterations)
+                    , Html.Attributes.min "0"
+                    , Html.Attributes.max "15"
+                    , Html.Attributes.name "iterations"
+                    , onInput SetIterations
+                    ]
+                    []
+                , label [ for "axiom" ] [ Html.text "Axiom" ]
+                , input
+                    [ Html.Attributes.type_ "text"
+                    , value model.axiom
+                    , Html.Attributes.name "axiom"
+                    , onInput SetAxiom
+                    ]
+                    []
+                , label [ for "angle" ] [ Html.text "Initial Angle" ]
+                , input
+                    [ Html.Attributes.type_ "text"
+                    , value (toString model.angle)
+                    , Html.Attributes.name "angle"
+                    , onInput SetAngle
+                    ]
+                    []
+                , label [ for "length" ] [ Html.text "Initial Length" ]
+                , input
+                    [ Html.Attributes.type_ "text"
+                    , value (toString model.initialLineLength)
+                    , Html.Attributes.name "length"
+                    , onInput SetInitialLength
+                    ]
+                    []
+                , label [ for "x" ] [ Html.text "Initial X-Coordinate" ]
+                , input
+                    [ Html.Attributes.type_ "text"
+                    , value (toString model.startX)
+                    , Html.Attributes.name "x"
+                    , onInput SetStartX
+                    ]
+                    []
+                , label [ for "y" ] [ Html.text "Initial Y-Coordinate" ]
+                , input
+                    [ Html.Attributes.type_ "text"
+                    , value (toString model.startY)
+                    , Html.Attributes.name "y"
+                    , onInput SetStartY
+                    ]
+                    []
+                , label [] [ Html.text "Rules" ]
+                , ul []
+                    (Dict.toList model.rules
+                        |> List.map
+                            (\pair ->
+                                let
+                                    ( key, rule ) =
+                                        pair
+                                in
+                                    li []
+                                        [ input
+                                            [ Html.Attributes.type_ "text"
+                                            , value key
+                                            , onInput (\newKey -> (SetRule ( newKey, rule )))
+                                            ]
+                                            []
+                                        , input
+                                            [ Html.Attributes.type_ "text"
+                                            , value rule
+                                            , onInput (\newRule -> (SetRule ( key, newRule )))
+                                            ]
+                                            []
+                                        ]
+                            )
+                    )
+                ]
             ]
