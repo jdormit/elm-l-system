@@ -148,6 +148,7 @@ type Msg
     | AddNewRule
     | NewRuleKey String
     | NewRuleValue String
+    | DeleteRule String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -215,6 +216,13 @@ update msg model =
                     Dict.insert model.newRuleKey model.newRuleValue model.rules
             in
                 update Reset { model | rules = newRules, newRuleKey = "", newRuleValue = "" }
+
+        DeleteRule key ->
+            let
+                newRules =
+                    Dict.remove key model.rules
+            in
+                update Reset { model | rules = newRules }
 
         Reset ->
             ( { model
@@ -550,6 +558,7 @@ view model =
                                             , onInput (\newRule -> (SetRule ( key, newRule )))
                                             ]
                                             []
+                                        , button [ onClick (DeleteRule key) ] [ Html.text "Delete Rule" ]
                                         ]
                             )
                     )
