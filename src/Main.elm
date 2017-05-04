@@ -57,7 +57,7 @@ initialModel =
     , svgWidth = 1500
     , svgHeight = 900
     , startX = 700
-    , startY = 900
+    , startY = 890
     , initialLineLength = 150.0
     , iterations = 0
     , axiom = "FX"
@@ -69,7 +69,7 @@ presetTree : Preset
 presetTree =
     { angle = 45.0
     , startX = 700
-    , startY = 900
+    , startY = 890
     , initialLineLength = 150.0
     , axiom = "FX"
     , rules = Dict.fromList [ ("X", "#(.7)[@(.6)-FX]+FX") ]
@@ -107,6 +107,7 @@ iterateLSystem iterations rules instructions =
 generateNewInstructions : Rules -> String -> String
 generateNewInstructions rules instructions =
     generateNewInstructionsHelper rules (String.toList instructions) []
+
 generateNewInstructionsHelper : Rules -> List Char -> List String -> String
 generateNewInstructionsHelper rules instructionsList acc =
     case List.head instructionsList of
@@ -123,7 +124,12 @@ type Msg
     = SetIterations String
     | Reset
     | SetPreset Preset
-
+    | SetAxiom String
+    | SetRules Rules
+    | SetAngle String
+    | SetInitialLength String
+    | SetStartX String
+    | SetStartY String
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -136,6 +142,30 @@ update msg model =
                      | iterations = iter
                      , instructions = (iterateLSystem iter model.rules model.axiom)
                  }, Cmd.none)
+        SetAxiom newAxiom ->
+            update Reset { model | axiom = newAxiom }
+        SetRules ru ->
+            (model, Cmd.none)
+        SetAngle angleVal ->
+            let
+                newAngle = Result.withDefault 0 (String.toFloat angleVal)
+            in
+                update Reset { model | angle = newAngle }
+        SetInitialLength lenVal ->
+            let
+                newLength = Result.withDefault 0 (String.toFloat lenVal)
+            in
+                update Reset { model | initialLineLength = newLength }
+        SetStartX xVal ->
+            let
+                newStartX = Result.withDefault 700.0 (String.toFloat xVal)
+            in
+                update Reset { model | startX = newStartX }
+        SetStartY yVal ->
+            let
+                newStartY = Result.withDefault 890.0 (String.toFloat yVal)
+            in
+                update Reset { model | startY = newStartY }
         Reset ->
             ({ model
              | iterations = 0
@@ -315,7 +345,10 @@ view model =
             [ (drawLSystem svgWidth svgHeight initialCursor (parseInstructions model.instructions))
             , fieldset [] [ radio "Tree" (SetPreset presetTree)
                           , radio "Dragon Curve" (SetPreset presetDragonCurve)
-                          , label [ for "iterations" ] [ Html.text ("Iterations: " ++ (toString model.iterations)) ]
+                          , label [ for "iterations"
+                                  ]
+                                  [ Html.text ("Iterations: " ++ (toString model.iterations))
+                                  ]
                           , input [ Html.Attributes.type_ "range"
                                   , defaultValue "0"
                                   , value (toString model.iterations)
@@ -324,6 +357,35 @@ view model =
                                   , Html.Attributes.name "iterations"
                                   , onInput SetIterations
                                   ] []
-                          , button [ onClick Reset ] [ Html.text "Reset" ]
+                          , label [ for "axiom" ] [ Html.text "Axiom" ]
+                          , input [ Html.Attributes.type_ "text"
+                                  , value model.axiom
+                                  , Html.Attributes.name "axiom"
+                                  , onInput SetAxiom
+                                  ] []
+                          , label [ for "angle" ] [ Html.text "Initial Angle" ]
+                          , input [ Html.Attributes.type_ "text"
+                                  , value (toString model.angle)
+                                  , Html.Attributes.name "angle"
+                                  , onInput SetAngle
+                                  ] []
+                          , label [ for "length" ] [ Html.text "Initial Length" ]
+                          , input [ Html.Attributes.type_ "text"
+                                  , value (toString model.initialLineLength)
+                                  , Html.Attributes.name "length"
+                                  , onInput SetInitialLength
+                                  ] []
+                          , label [ for "x" ] [ Html.text "Initial X-Coordinate" ]
+                          , input [ Html.Attributes.type_ "text"
+                                  , value (toString model.startX)
+                                  , Html.Attributes.name "x"
+                                  , onInput SetStartX
+                                  ] []
+                          , label [ for "y" ] [ Html.text "Initial Y-Coordinate" ]
+                          , input [ Html.Attributes.type_ "text"
+                                  , value (toString model.startY)
+                                  , Html.Attributes.name "y"
+                                  , onInput SetStartY
+                                  ] []
                           ]
             ]
