@@ -1,5 +1,5 @@
 import Html exposing (..)
-import Html.Attributes
+import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -44,7 +44,7 @@ presetTree : Model
 presetTree =
     { angle = 45.0
     , svgWidth = 1500
-    , svgHeight = 925
+    , svgHeight = 900
     , startX = 700
     , startY = 900
     , initialLineLength = 150.0
@@ -58,9 +58,9 @@ presetDragonCurve : Model
 presetDragonCurve =
     { angle = 90.0
     , svgWidth = 1500
-    , svgHeight = 925
+    , svgHeight = 900
     , startX = 1000
-    , startY = 500
+    , startY = 450
     , initialLineLength = 10.0
     , iterations = 0
     , axiom = "FX"
@@ -103,7 +103,7 @@ generateNewInstructionsHelper rules instructionsList acc =
 
 
 type Msg
-    = Iterate
+    = SetIterations String
     | Reset
     | Preset Model
 
@@ -111,11 +111,14 @@ type Msg
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
-        Iterate ->
-            ({ model
-             | iterations = model.iterations + 1
-             , instructions = (iterateLSystem (model.iterations + 1) model.rules model.axiom)
-             }, Cmd.none)
+        SetIterations value ->
+            let
+                iter = Result.withDefault 0 (String.toInt value)
+            in
+                ({ model
+                     | iterations = iter
+                     , instructions = (iterateLSystem iter model.rules model.axiom)
+                 }, Cmd.none)
         Reset ->
             ({ model
              | iterations = 0
@@ -267,7 +270,7 @@ radio value msg =
   label
     [ Html.Attributes.style [("padding", "20px")]
     ]
-    [ input [ type_ "radio", name "font-size", onClick msg ] []
+    [ input [ Html.Attributes.type_ "radio", Html.Attributes.name "font-size", onClick msg ] []
     , Html.text value
     ]
 
@@ -288,7 +291,14 @@ view model =
             [ (drawLSystem svgWidth svgHeight initialCursor (parseInstructions model.instructions))
             , fieldset [] [ radio "Tree" (Preset presetTree)
                           , radio "Dragon Curve" (Preset presetDragonCurve)
-                          , button [ onClick Iterate ] [ Html.text "Iterate L-System" ]
+                          , label [ for "iterations" ] [ Html.text ("Iterations: " ++ (toString model.iterations)) ]
+                          , input [ Html.Attributes.type_ "range"
+                                  , defaultValue "0"
+                                  , Html.Attributes.min "0"
+                                  , Html.Attributes.max "15"
+                                  , Html.Attributes.name "iterations"
+                                  , onInput SetIterations
+                                  ] []
                           , button [ onClick Reset ] [ Html.text "Reset" ]
                           ]
             ]
