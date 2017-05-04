@@ -51,6 +51,8 @@ type alias Model =
     , axiom : String
     , instructions : String
     , rules : Rules
+    , newRuleKey : String
+    , newRuleValue : String
     }
 
 
@@ -66,6 +68,8 @@ initialModel =
     , axiom = "FX"
     , instructions = "FX"
     , rules = Dict.fromList [ ( "X", "#(.7)[@(.6)-FX]+FX" ) ]
+    , newRuleKey = ""
+    , newRuleValue = ""
     }
 
 
@@ -141,6 +145,9 @@ type Msg
     | SetInitialLength String
     | SetStartX String
     | SetStartY String
+    | AddNewRule
+    | NewRuleKey String
+    | NewRuleValue String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -195,6 +202,19 @@ update msg model =
                     Result.withDefault 890.0 (String.toFloat yVal)
             in
                 update Reset { model | startY = newStartY }
+
+        NewRuleKey key ->
+            ( { model | newRuleKey = key }, Cmd.none )
+
+        NewRuleValue value ->
+            ( { model | newRuleValue = value }, Cmd.none )
+
+        AddNewRule ->
+            let
+                newRules =
+                    Dict.insert model.newRuleKey model.newRuleValue model.rules
+            in
+                update Reset { model | rules = newRules, newRuleKey = "", newRuleValue = "" }
 
         Reset ->
             ( { model
@@ -533,5 +553,19 @@ view model =
                                         ]
                             )
                     )
+                , label [] [ Html.text "Add New Rule" ]
+                , input
+                    [ Html.Attributes.type_ "text"
+                    , value model.newRuleKey
+                    , onInput NewRuleKey
+                    ]
+                    []
+                , input
+                    [ Html.Attributes.type_ "text"
+                    , value model.newRuleValue
+                    , onInput NewRuleValue
+                    ]
+                    []
+                , button [ onClick AddNewRule ] [ Html.text "Add Rule" ]
                 ]
             ]
