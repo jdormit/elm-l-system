@@ -125,7 +125,7 @@ type Msg
     | Reset
     | SetPreset Preset
     | SetAxiom String
-    | SetRules Rules
+    | SetRule (String, String)
     | SetAngle String
     | SetInitialLength String
     | SetStartX String
@@ -144,8 +144,11 @@ update msg model =
                  }, Cmd.none)
         SetAxiom newAxiom ->
             update Reset { model | axiom = newAxiom }
-        SetRules ru ->
-            (model, Cmd.none)
+        SetRule (key, rule) ->
+            let
+                newRules = Dict.insert key rule model.rules
+            in
+                update Reset { model | rules = newRules }
         SetAngle angleVal ->
             let
                 newAngle = Result.withDefault 0 (String.toFloat angleVal)
@@ -343,7 +346,8 @@ view model =
         div [
             ]
             [ (drawLSystem svgWidth svgHeight initialCursor (parseInstructions model.instructions))
-            , fieldset [] [ radio "Tree" (SetPreset presetTree)
+            , fieldset [] [ legend [] [ Html.text "Control Panel" ]
+                          , radio "Tree" (SetPreset presetTree)
                           , radio "Dragon Curve" (SetPreset presetDragonCurve)
                           , label [ for "iterations"
                                   ]
@@ -387,5 +391,19 @@ view model =
                                   , Html.Attributes.name "y"
                                   , onInput SetStartY
                                   ] []
+                          , label [] [ Html.text "Rules" ]
+                          , ul [] (Dict.toList model.rules
+                                      |> List.map (\pair ->
+                                                   let
+                                                       (key, rule) = pair
+                                                   in
+                                                       li [] [ input [ Html.Attributes.type_ "text"
+                                                                     , value key
+                                                                     , onInput (\newKey -> (SetRule (newKey, rule)))
+                                                                     ] []
+                                                             , input [ Html.Attributes.type_ "text"
+                                                                     , value rule
+                                                                     , onInput (\newRule -> (SetRule (key, newRule)))
+                                                                     ] []]))
                           ]
             ]
