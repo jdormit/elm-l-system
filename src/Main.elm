@@ -33,7 +33,7 @@ type alias Model =
     , svgHeight : Float
     , startX : Float
     , startY : Float
-    , lineDelta : Float
+    , initialLineLength : Float
     , iterations : Int
     , axiom : String
     , instructions : String
@@ -43,11 +43,11 @@ type alias Model =
 presetTree : Model
 presetTree =
     { angle = 45.0
-    , svgWidth = 800
-    , svgHeight = 800
-    , startX = 400
-    , startY = 800
-    , lineDelta = 150.0
+    , svgWidth = 1500
+    , svgHeight = 925
+    , startX = 700
+    , startY = 900
+    , initialLineLength = 150.0
     , iterations = 0
     , axiom = "FX"
     , instructions = "FX"
@@ -57,11 +57,11 @@ presetTree =
 presetDragonCurve : Model
 presetDragonCurve =
     { angle = 90.0
-    , svgWidth = 1000
-    , svgHeight = 950
-    , startX = 700
+    , svgWidth = 1500
+    , svgHeight = 925
+    , startX = 1000
     , startY = 500
-    , lineDelta = 10.0
+    , initialLineLength = 10.0
     , iterations = 0
     , axiom = "FX"
     , instructions = "FX"
@@ -139,7 +139,7 @@ subscriptions model =
 type alias Cursor =
     { coords : (Float, Float)
     , angle : Float
-    , lineDelta : Float
+    , lineLength : Float
     , angleDelta : Float
     }
 
@@ -181,15 +181,15 @@ drawLSystemHelper instructions cursor cursorStack lineAcc =
         Nothing -> lineAcc
         Just "F" ->
             let
-                newCoords = coordsFromAngleAndLength cursor.coords cursor.angle cursor.lineDelta
+                newCoords = coordsFromAngleAndLength cursor.coords cursor.angle cursor.lineLength
                 newCursor = { cursor | coords = newCoords }
-                newLine = drawLine cursor.coords cursor.angle cursor.lineDelta
+                newLine = drawLine cursor.coords cursor.angle cursor.lineLength
                 newLineAcc = newLine :: lineAcc
             in
                 drawLSystemHelper (withDefault [] (List.tail instructions)) newCursor cursorStack newLineAcc
         Just "G" ->
             let
-                newCoords = coordsFromAngleAndLength cursor.coords cursor.angle cursor.lineDelta
+                newCoords = coordsFromAngleAndLength cursor.coords cursor.angle cursor.lineLength
                 newCursor = { cursor | coords = newCoords }
             in
                 drawLSystemHelper (withDefault [] (List.tail instructions)) newCursor cursorStack lineAcc
@@ -223,8 +223,8 @@ drawLSystemHelper instructions cursor cursorStack lineAcc =
                         Just str -> Result.withDefault 1.0 (String.toFloat str)
                         Nothing -> 1.0
                 newInstructions = (withDefault [] (List.tail (withDefault [] (List.tail instructions))))
-                newLineDelta = cursor.lineDelta * multiplier
-                newCursor = { cursor | lineDelta = newLineDelta }
+                newLineDelta = cursor.lineLength * multiplier
+                newCursor = { cursor | lineLength = newLineDelta }
             in
                 drawLSystemHelper newInstructions newCursor cursorStack lineAcc
         Just "@" ->
@@ -277,7 +277,7 @@ view model =
         initialCursor =
             { coords = (model.startX, model.startY)
             , angle = 90.0
-            , lineDelta = model.lineDelta
+            , lineLength = model.initialLineLength
             , angleDelta = model.angle
             }
         svgHeight = model.svgHeight
@@ -286,8 +286,9 @@ view model =
         div [
             ]
             [ (drawLSystem svgWidth svgHeight initialCursor (parseInstructions model.instructions))
-            , button [ onClick Iterate ] [ Html.text "Iterate L-System" ]
-            , button [ onClick Reset ] [ Html.text "Reset" ]
             , fieldset [] [ radio "Tree" (Preset presetTree)
-                          , radio "Dragon Curve" (Preset presetDragonCurve)]
+                          , radio "Dragon Curve" (Preset presetDragonCurve)
+                          , button [ onClick Iterate ] [ Html.text "Iterate L-System" ]
+                          , button [ onClick Reset ] [ Html.text "Reset" ]
+                          ]
             ]
