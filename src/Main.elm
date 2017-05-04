@@ -27,6 +27,16 @@ type alias Rules =
     Dict.Dict String String
 
 
+type alias Preset =
+    { angle : Float
+    , startX : Float
+    , startY : Float
+    , initialLineLength : Float
+    , axiom : String
+    , rules : Rules
+    }
+
+
 type alias Model =
     { angle : Float
     , svgWidth : Float
@@ -40,9 +50,10 @@ type alias Model =
     , rules : Rules
     }
 
-presetTree : Model
-presetTree =
-    { angle = 45.0
+
+initialModel : Model
+initialModel =
+    { angle = 45
     , svgWidth = 1500
     , svgHeight = 900
     , startX = 700
@@ -54,23 +65,29 @@ presetTree =
     , rules = Dict.fromList [ ("X", "#(.7)[@(.6)-FX]+FX") ]
     }
 
-presetDragonCurve : Model
+presetTree : Preset
+presetTree =
+    { angle = 45.0
+    , startX = 700
+    , startY = 900
+    , initialLineLength = 150.0
+    , axiom = "FX"
+    , rules = Dict.fromList [ ("X", "#(.7)[@(.6)-FX]+FX") ]
+    }
+
+presetDragonCurve : Preset
 presetDragonCurve =
     { angle = 90.0
-    , svgWidth = 1500
-    , svgHeight = 900
     , startX = 1000
     , startY = 450
     , initialLineLength = 10.0
-    , iterations = 0
     , axiom = "FX"
-    , instructions = "FX"
     , rules = Dict.fromList [ ("X", "X-YF-"), ("Y", "+FX+Y"), ("F", "") ]
     }
 
 init : (Model, Cmd Msg)
 init =
-    (presetTree, Cmd.none)
+    update (SetPreset presetTree) initialModel
 
 
 -- Update
@@ -105,7 +122,7 @@ generateNewInstructionsHelper rules instructionsList acc =
 type Msg
     = SetIterations String
     | Reset
-    | Preset Model
+    | SetPreset Preset
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -124,8 +141,15 @@ update msg model =
              | iterations = 0
              , instructions = model.axiom
              }, Cmd.none)
-        Preset preset ->
-            (preset, Cmd.none)
+        SetPreset preset ->
+            update Reset { model
+             | angle = preset.angle
+             , startX = preset.startX
+             , startY = preset.startY
+             , initialLineLength = preset.initialLineLength
+             , axiom = preset.axiom
+             , rules = preset.rules
+             }
 
 
 -- Subscriptions
@@ -289,11 +313,12 @@ view model =
         div [
             ]
             [ (drawLSystem svgWidth svgHeight initialCursor (parseInstructions model.instructions))
-            , fieldset [] [ radio "Tree" (Preset presetTree)
-                          , radio "Dragon Curve" (Preset presetDragonCurve)
+            , fieldset [] [ radio "Tree" (SetPreset presetTree)
+                          , radio "Dragon Curve" (SetPreset presetDragonCurve)
                           , label [ for "iterations" ] [ Html.text ("Iterations: " ++ (toString model.iterations)) ]
                           , input [ Html.Attributes.type_ "range"
                                   , defaultValue "0"
+                                  , value (toString model.iterations)
                                   , Html.Attributes.min "0"
                                   , Html.Attributes.max "15"
                                   , Html.Attributes.name "iterations"
