@@ -1,0 +1,48 @@
+* {
+    font-size: inherit;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.container {
+    display: flex;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 1rem
+}
+
+.controlPanel {
+    margin-top: 1.5em;
+}
+
+.controlPanel input, .controlPanel select, .controlPanel button {
+    width: 295px;
+    line-height: 1.5;
+    margin: auto;
+}
+
+label {
+    display: block;
+    margin-top: 1.5em;
+}
+
+.radioLabel {
+    display: inline;
+}
+
+input.ruleKey {
+    width: 25px;
+    text-align: center;
+}
+
+input.ruleValue {
+    width: 150px;
+}
+
+button.ruleButton {
+    width: 120px;
+}
+
+ul.ruleList {
+    list-style-type: none;
+    padding-left: 0;
+}

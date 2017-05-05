@@ -1,10 +1,10 @@
 Based on http://www.cgjennings.ca/toybox/lsystems/
 
-* TODO by Friday [1/4]
+* TODO by Friday [3/4]
 - [X] Use a slider instead of the "iterate next" button - Update function will need to take a SetIteration message instead of an Iterate message
-- [ ] Add inputs to allow the user to define the axiom, rules, starting angle, starting length, and starting coordinates. These should be initialized with the preset values at load time. The reset button will now be a "reinitialize" button instead, which restarts the system using the new model
+- [X] Add inputs to allow the user to define the axiom, rules, starting angle, starting length, and starting coordinates. These should be initialized with the preset values at load time. The reset button will now be a "reinitialize" button instead, which restarts the system using the new model
 - [ ] Add an explanation of L-Systems and a description of the grammar
-- [ ] Make it look pretty
+- [X] Make it look pretty
 
 * Goal
 Create an L-System that represents a plant. Render it with SVG graphics.

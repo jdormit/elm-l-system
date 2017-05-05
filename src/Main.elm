@@ -3,6 +3,7 @@ module Main exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Json.Decode
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Dict
@@ -97,7 +98,7 @@ presetDragonCurve =
 
 init : ( Model, Cmd Msg )
 init =
-    update (SetPreset presetTree) initialModel
+    update (SetPreset "presetTree") initialModel
 
 
 
@@ -138,7 +139,7 @@ generateNewInstructionsHelper rules instructionsList acc =
 type Msg
     = SetIterations String
     | Reset
-    | SetPreset Preset
+    | SetPreset String
     | SetAxiom String
     | SetRule ( String, String )
     | SetAngle String
@@ -232,16 +233,28 @@ update msg model =
             , Cmd.none
             )
 
-        SetPreset preset ->
-            update Reset
-                { model
-                    | angle = preset.angle
-                    , startX = preset.startX
-                    , startY = preset.startY
-                    , initialLineLength = preset.initialLineLength
-                    , axiom = preset.axiom
-                    , rules = preset.rules
-                }
+        SetPreset presetVal ->
+            let
+                preset = case presetVal of
+                             "presetTree" -> presetTree
+                             "presetDragonCurve" -> presetDragonCurve
+                             _ -> { angle = model.angle
+                                  , startX = model.startX
+                                  , startY = model.startY
+                                  , initialLineLength = model.initialLineLength
+                                  , axiom = model.axiom
+                                  , rules = model.rules
+                                  }
+            in
+                update Reset
+                    { model
+                        | angle = preset.angle
+                        , startX = preset.startX
+                        , startY = preset.startY
+                        , initialLineLength = preset.initialLineLength
+                        , axiom = preset.axiom
+                        , rules = preset.rules
+                    }
 
 
 
@@ -452,10 +465,16 @@ radio : String -> msg -> Html msg
 radio value msg =
     label
         [ Html.Attributes.style [ ( "padding", "20px" ) ]
+        , Html.Attributes.class "radioLabel"
         ]
         [ input [ Html.Attributes.type_ "radio", Html.Attributes.name "font-size", onClick msg ] []
         , Html.text value
         ]
+
+
+css : String -> Html Msg
+css path =
+    Html.node "link" [ rel "stylesheet", href path ] []
 
 
 view : Model -> Html Msg
@@ -475,12 +494,18 @@ view model =
             model.svgWidth
     in
         div
-            []
-            [ (drawLSystem svgWidth svgHeight initialCursor (parseInstructions model.instructions))
-            , fieldset []
+            [ Html.Attributes.class "container" ]
+            [ css "./style.css"
+            , (drawLSystem svgWidth svgHeight initialCursor (parseInstructions model.instructions))
+            , fieldset [ Html.Attributes.class "controlPanel" ]
                 [ legend [] [ Html.text "Control Panel" ]
-                , radio "Tree" (SetPreset presetTree)
-                , radio "Dragon Curve" (SetPreset presetDragonCurve)
+                , label [] [ Html.text "Presets" ]
+                , select [ Html.Attributes.class "presetSelect"
+                         , on "change" (Json.Decode.map SetPreset targetValue)
+                         ]
+                         [ option [ Html.Attributes.value "presetTree"] [ Html.text "Tree" ]
+                         , option [ Html.Attributes.value "presetDragonCurve" ] [ Html.text "Dragon Curve" ]
+                         ]
                 , label
                     [ for "iterations"
                     ]
@@ -537,7 +562,8 @@ view model =
                     ]
                     []
                 , label [] [ Html.text "Rules" ]
-                , ul []
+                , ul [ Html.Attributes.class "ruleList"
+                     ]
                     (Dict.toList model.rules
                         |> List.map
                             (\pair ->
@@ -548,33 +574,43 @@ view model =
                                     li []
                                         [ input
                                             [ Html.Attributes.type_ "text"
+                                            , Html.Attributes.class "ruleKey"
                                             , value key
                                             , onInput (\newKey -> (SetRule ( newKey, rule )))
                                             ]
                                             []
                                         , input
                                             [ Html.Attributes.type_ "text"
+                                            , Html.Attributes.class "ruleValue"
                                             , value rule
                                             , onInput (\newRule -> (SetRule ( key, newRule )))
                                             ]
                                             []
-                                        , button [ onClick (DeleteRule key) ] [ Html.text "Delete Rule" ]
+                                        , button [ onClick (DeleteRule key)
+                                                 , Html.Attributes.class "ruleButton"
+                                                 ]
+                                                 [ Html.text "Delete Rule" ]
                                         ]
                             )
                     )
                 , label [] [ Html.text "Add New Rule" ]
                 , input
                     [ Html.Attributes.type_ "text"
+                    , Html.Attributes.class "ruleKey"
                     , value model.newRuleKey
                     , onInput NewRuleKey
                     ]
                     []
                 , input
                     [ Html.Attributes.type_ "text"
+                    , Html.Attributes.class "ruleValue"
                     , value model.newRuleValue
                     , onInput NewRuleValue
                     ]
                     []
-                , button [ onClick AddNewRule ] [ Html.text "Add Rule" ]
+                , button [ onClick AddNewRule
+                         , Html.Attributes.class "ruleButton"
+                         ]
+                         [ Html.text "Add Rule" ]
                 ]
             ]
