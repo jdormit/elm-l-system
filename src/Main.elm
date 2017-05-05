@@ -347,6 +347,22 @@ drawLSystemHelper instructions cursor cursorStack lineAcc =
 
                 newCursor =
                     { cursor | coords = newCoords }
+
+                newLine =
+                    drawLine cursor.coords cursor.angle cursor.lineLength
+
+                newLineAcc =
+                    newLine :: lineAcc
+            in
+                drawLSystemHelper (withDefault [] (List.tail instructions)) newCursor cursorStack newLineAcc
+
+        Just "_" ->
+            let
+                newCoords =
+                    coordsFromAngleAndLength cursor.coords cursor.angle cursor.lineLength
+
+                newCursor =
+                    { cursor | coords = newCoords }
             in
                 drawLSystemHelper (withDefault [] (List.tail instructions)) newCursor cursorStack lineAcc
 

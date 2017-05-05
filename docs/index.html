@@ -8751,6 +8751,8 @@ var _user$project$Main$drawLSystemHelper = F4(
 						lineAcc = _v9;
 						continue drawLSystemHelper;
 					case 'G':
+						var newLine = A3(_user$project$Main$drawLine, cursor.coords, cursor.angle, cursor.lineLength);
+						var newLineAcc = {ctor: '::', _0: newLine, _1: lineAcc};
 						var newCoords = A3(_user$project$Main$coordsFromAngleAndLength, cursor.coords, cursor.angle, cursor.lineLength);
 						var newCursor = _elm_lang$core$Native_Utils.update(
 							cursor,
@@ -8761,17 +8763,17 @@ var _user$project$Main$drawLSystemHelper = F4(
 							_elm_lang$core$List$tail(instructions)),
 							_v11 = newCursor,
 							_v12 = cursorStack,
-							_v13 = lineAcc;
+							_v13 = newLineAcc;
 						instructions = _v10;
 						cursor = _v11;
 						cursorStack = _v12;
 						lineAcc = _v13;
 						continue drawLSystemHelper;
-					case '+':
-						var newAngle = cursor.angle + cursor.angleDelta;
+					case '_':
+						var newCoords = A3(_user$project$Main$coordsFromAngleAndLength, cursor.coords, cursor.angle, cursor.lineLength);
 						var newCursor = _elm_lang$core$Native_Utils.update(
 							cursor,
-							{angle: newAngle});
+							{coords: newCoords});
 						var _v14 = A2(
 							_elm_lang$core$Maybe$withDefault,
 							{ctor: '[]'},
@@ -8784,8 +8786,8 @@ var _user$project$Main$drawLSystemHelper = F4(
 						cursorStack = _v16;
 						lineAcc = _v17;
 						continue drawLSystemHelper;
-					case '-':
-						var newAngle = cursor.angle - cursor.angleDelta;
+					case '+':
+						var newAngle = cursor.angle + cursor.angleDelta;
 						var newCursor = _elm_lang$core$Native_Utils.update(
 							cursor,
 							{angle: newAngle});
@@ -8801,19 +8803,36 @@ var _user$project$Main$drawLSystemHelper = F4(
 						cursorStack = _v20;
 						lineAcc = _v21;
 						continue drawLSystemHelper;
-					case '[':
-						var newCursorStack = {ctor: '::', _0: cursor, _1: cursorStack};
+					case '-':
+						var newAngle = cursor.angle - cursor.angleDelta;
+						var newCursor = _elm_lang$core$Native_Utils.update(
+							cursor,
+							{angle: newAngle});
 						var _v22 = A2(
 							_elm_lang$core$Maybe$withDefault,
 							{ctor: '[]'},
 							_elm_lang$core$List$tail(instructions)),
-							_v23 = cursor,
-							_v24 = newCursorStack,
+							_v23 = newCursor,
+							_v24 = cursorStack,
 							_v25 = lineAcc;
 						instructions = _v22;
 						cursor = _v23;
 						cursorStack = _v24;
 						lineAcc = _v25;
+						continue drawLSystemHelper;
+					case '[':
+						var newCursorStack = {ctor: '::', _0: cursor, _1: cursorStack};
+						var _v26 = A2(
+							_elm_lang$core$Maybe$withDefault,
+							{ctor: '[]'},
+							_elm_lang$core$List$tail(instructions)),
+							_v27 = cursor,
+							_v28 = newCursorStack,
+							_v29 = lineAcc;
+						instructions = _v26;
+						cursor = _v27;
+						cursorStack = _v28;
+						lineAcc = _v29;
 						continue drawLSystemHelper;
 					case ']':
 						var newCursorStack = A2(
@@ -8824,17 +8843,17 @@ var _user$project$Main$drawLSystemHelper = F4(
 							_elm_lang$core$Maybe$withDefault,
 							cursor,
 							_elm_lang$core$List$head(cursorStack));
-						var _v26 = A2(
+						var _v30 = A2(
 							_elm_lang$core$Maybe$withDefault,
 							{ctor: '[]'},
 							_elm_lang$core$List$tail(instructions)),
-							_v27 = newCursor,
-							_v28 = newCursorStack,
-							_v29 = lineAcc;
-						instructions = _v26;
-						cursor = _v27;
-						cursorStack = _v28;
-						lineAcc = _v29;
+							_v31 = newCursor,
+							_v32 = newCursorStack,
+							_v33 = lineAcc;
+						instructions = _v30;
+						cursor = _v31;
+						cursorStack = _v32;
+						lineAcc = _v33;
 						continue drawLSystemHelper;
 					case '#':
 						var newInstructions = A2(
@@ -8864,14 +8883,14 @@ var _user$project$Main$drawLSystemHelper = F4(
 						var newCursor = _elm_lang$core$Native_Utils.update(
 							cursor,
 							{lineLength: newLineDelta});
-						var _v31 = newInstructions,
-							_v32 = newCursor,
-							_v33 = cursorStack,
-							_v34 = lineAcc;
-						instructions = _v31;
-						cursor = _v32;
-						cursorStack = _v33;
-						lineAcc = _v34;
+						var _v35 = newInstructions,
+							_v36 = newCursor,
+							_v37 = cursorStack,
+							_v38 = lineAcc;
+						instructions = _v35;
+						cursor = _v36;
+						cursorStack = _v37;
+						lineAcc = _v38;
 						continue drawLSystemHelper;
 					case '@':
 						var newInstructions = A2(
@@ -8901,27 +8920,27 @@ var _user$project$Main$drawLSystemHelper = F4(
 						var newCursor = _elm_lang$core$Native_Utils.update(
 							cursor,
 							{angleDelta: newAngleDelta});
-						var _v36 = newInstructions,
-							_v37 = newCursor,
-							_v38 = cursorStack,
-							_v39 = lineAcc;
-						instructions = _v36;
-						cursor = _v37;
-						cursorStack = _v38;
-						lineAcc = _v39;
-						continue drawLSystemHelper;
-					default:
-						var _v40 = A2(
-							_elm_lang$core$Maybe$withDefault,
-							{ctor: '[]'},
-							_elm_lang$core$List$tail(instructions)),
-							_v41 = cursor,
+						var _v40 = newInstructions,
+							_v41 = newCursor,
 							_v42 = cursorStack,
 							_v43 = lineAcc;
 						instructions = _v40;
 						cursor = _v41;
 						cursorStack = _v42;
 						lineAcc = _v43;
+						continue drawLSystemHelper;
+					default:
+						var _v44 = A2(
+							_elm_lang$core$Maybe$withDefault,
+							{ctor: '[]'},
+							_elm_lang$core$List$tail(instructions)),
+							_v45 = cursor,
+							_v46 = cursorStack,
+							_v47 = lineAcc;
+						instructions = _v44;
+						cursor = _v45;
+						cursorStack = _v46;
+						lineAcc = _v47;
 						continue drawLSystemHelper;
 				}
 			}
@@ -8968,15 +8987,15 @@ var _user$project$Main$generateNewInstructionsHelper = F3(
 						_elm_lang$core$Dict$get,
 						_elm_lang$core$String$fromChar(_p8),
 						rules));
-				var _v45 = rules,
-					_v46 = A2(
+				var _v49 = rules,
+					_v50 = A2(
 					_elm_lang$core$Maybe$withDefault,
 					{ctor: '[]'},
 					_elm_lang$core$List$tail(instructionsList)),
-					_v47 = {ctor: '::', _0: newInstruction, _1: acc};
-				rules = _v45;
-				instructionsList = _v46;
-				acc = _v47;
+					_v51 = {ctor: '::', _0: newInstruction, _1: acc};
+				rules = _v49;
+				instructionsList = _v50;
+				acc = _v51;
 				continue generateNewInstructionsHelper;
 			}
 		}
@@ -8997,12 +9016,12 @@ var _user$project$Main$iterateLSystem = F3(
 				return instructions;
 			} else {
 				var newInstructions = A2(_user$project$Main$generateNewInstructions, rules, instructions);
-				var _v48 = iterations - 1,
-					_v49 = rules,
-					_v50 = newInstructions;
-				iterations = _v48;
-				rules = _v49;
-				instructions = _v50;
+				var _v52 = iterations - 1,
+					_v53 = rules,
+					_v54 = newInstructions;
+				iterations = _v52;
+				rules = _v53;
+				instructions = _v54;
 				continue iterateLSystem;
 			}
 		}
@@ -9147,69 +9166,69 @@ var _user$project$Main$update = F2(
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				case 'SetAxiom':
-					var _v52 = _user$project$Main$Reset,
-						_v53 = _elm_lang$core$Native_Utils.update(
+					var _v56 = _user$project$Main$Reset,
+						_v57 = _elm_lang$core$Native_Utils.update(
 						model,
 						{axiom: _p9._0});
-					msg = _v52;
-					model = _v53;
+					msg = _v56;
+					model = _v57;
 					continue update;
 				case 'SetRule':
 					var newRules = A3(_elm_lang$core$Dict$insert, _p9._0._0, _p9._0._1, model.rules);
-					var _v54 = _user$project$Main$Reset,
-						_v55 = _elm_lang$core$Native_Utils.update(
+					var _v58 = _user$project$Main$Reset,
+						_v59 = _elm_lang$core$Native_Utils.update(
 						model,
 						{rules: newRules});
-					msg = _v54;
-					model = _v55;
+					msg = _v58;
+					model = _v59;
 					continue update;
 				case 'SetAngle':
 					var newAngle = A2(
 						_elm_lang$core$Result$withDefault,
 						0,
 						_elm_lang$core$String$toFloat(_p9._0));
-					var _v56 = _user$project$Main$Reset,
-						_v57 = _elm_lang$core$Native_Utils.update(
+					var _v60 = _user$project$Main$Reset,
+						_v61 = _elm_lang$core$Native_Utils.update(
 						model,
 						{angle: newAngle});
-					msg = _v56;
-					model = _v57;
+					msg = _v60;
+					model = _v61;
 					continue update;
 				case 'SetInitialLength':
 					var newLength = A2(
 						_elm_lang$core$Result$withDefault,
 						0,
 						_elm_lang$core$String$toFloat(_p9._0));
-					var _v58 = _user$project$Main$Reset,
-						_v59 = _elm_lang$core$Native_Utils.update(
+					var _v62 = _user$project$Main$Reset,
+						_v63 = _elm_lang$core$Native_Utils.update(
 						model,
 						{initialLineLength: newLength});
-					msg = _v58;
-					model = _v59;
+					msg = _v62;
+					model = _v63;
 					continue update;
 				case 'SetStartX':
 					var newStartX = A2(
 						_elm_lang$core$Result$withDefault,
 						700.0,
 						_elm_lang$core$String$toFloat(_p9._0));
-					var _v60 = _user$project$Main$Reset,
-						_v61 = _elm_lang$core$Native_Utils.update(
+					var _v64 = _user$project$Main$Reset,
+						_v65 = _elm_lang$core$Native_Utils.update(
 						model,
 						{startX: newStartX});
-					msg = _v60;
-					model = _v61;
+					msg = _v64;
+					model = _v65;
 					continue update;
 				case 'SetStartY':
 					var newStartY = A2(
 						_elm_lang$core$Result$withDefault,
 						890.0,
 						_elm_lang$core$String$toFloat(_p9._0));
-					var _v62 = _user$project$Main$Reset,
-						_v63 = _elm_lang$core$Native_Utils.update(
+					var _v66 = _user$project$Main$Reset,
+						_v67 = _elm_lang$core$Native_Utils.update(
 						model,
 						{startY: newStartY});
-					msg = _v62;
-					model = _v63;
+					msg = _v66;
+					model = _v67;
 					continue update;
 				case 'NewRuleKey':
 					return {
@@ -9229,21 +9248,21 @@ var _user$project$Main$update = F2(
 					};
 				case 'AddNewRule':
 					var newRules = A3(_elm_lang$core$Dict$insert, model.newRuleKey, model.newRuleValue, model.rules);
-					var _v64 = _user$project$Main$Reset,
-						_v65 = _elm_lang$core$Native_Utils.update(
+					var _v68 = _user$project$Main$Reset,
+						_v69 = _elm_lang$core$Native_Utils.update(
 						model,
 						{rules: newRules, newRuleKey: '', newRuleValue: ''});
-					msg = _v64;
-					model = _v65;
+					msg = _v68;
+					model = _v69;
 					continue update;
 				case 'DeleteRule':
 					var newRules = A2(_elm_lang$core$Dict$remove, _p9._0, model.rules);
-					var _v66 = _user$project$Main$Reset,
-						_v67 = _elm_lang$core$Native_Utils.update(
+					var _v70 = _user$project$Main$Reset,
+						_v71 = _elm_lang$core$Native_Utils.update(
 						model,
 						{rules: newRules});
-					msg = _v66;
-					model = _v67;
+					msg = _v70;
+					model = _v71;
 					continue update;
 				case 'Reset':
 					return {
@@ -9265,12 +9284,12 @@ var _user$project$Main$update = F2(
 								return {angle: model.angle, startX: model.startX, startY: model.startY, initialLineLength: model.initialLineLength, axiom: model.axiom, rules: model.rules};
 						}
 					}();
-					var _v69 = _user$project$Main$Reset,
-						_v70 = _elm_lang$core$Native_Utils.update(
+					var _v73 = _user$project$Main$Reset,
+						_v74 = _elm_lang$core$Native_Utils.update(
 						model,
 						{angle: preset.angle, startX: preset.startX, startY: preset.startY, initialLineLength: preset.initialLineLength, axiom: preset.axiom, rules: preset.rules});
-					msg = _v69;
-					model = _v70;
+					msg = _v73;
+					model = _v74;
 					continue update;
 			}
 		}
