@@ -8570,6 +8570,21 @@ var _elm_lang$svg$Svg_Attributes$additive = _elm_lang$virtual_dom$VirtualDom$att
 var _elm_lang$svg$Svg_Attributes$accumulate = _elm_lang$virtual_dom$VirtualDom$attribute('accumulate');
 var _elm_lang$svg$Svg_Attributes$accelerate = _elm_lang$virtual_dom$VirtualDom$attribute('accelerate');
 var _elm_lang$svg$Svg_Attributes$accentHeight = _elm_lang$virtual_dom$VirtualDom$attribute('accent-height');
+var _user$project$Main$css = function (path) {
+	return A3(
+		_elm_lang$html$Html$node,
+		'link',
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$rel('stylesheet'),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$href(path),
+				_1: {ctor: '[]'}
+			}
+		},
+		{ctor: '[]'});
+};
 var _user$project$Main$radio = F2(
 	function (value, msg) {
 		return A2(
@@ -8582,7 +8597,11 @@ var _user$project$Main$radio = F2(
 						_0: {ctor: '_Tuple2', _0: 'padding', _1: '20px'},
 						_1: {ctor: '[]'}
 					}),
-				_1: {ctor: '[]'}
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('radioLabel'),
+					_1: {ctor: '[]'}
+				}
 			},
 			{
 				ctor: '::',
@@ -9235,20 +9254,30 @@ var _user$project$Main$update = F2(
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				default:
-					var _p10 = _p9._0;
-					var _v68 = _user$project$Main$Reset,
-						_v69 = _elm_lang$core$Native_Utils.update(
+					var preset = function () {
+						var _p10 = _p9._0;
+						switch (_p10) {
+							case 'presetTree':
+								return _user$project$Main$presetTree;
+							case 'presetDragonCurve':
+								return _user$project$Main$presetDragonCurve;
+							default:
+								return {angle: model.angle, startX: model.startX, startY: model.startY, initialLineLength: model.initialLineLength, axiom: model.axiom, rules: model.rules};
+						}
+					}();
+					var _v69 = _user$project$Main$Reset,
+						_v70 = _elm_lang$core$Native_Utils.update(
 						model,
-						{angle: _p10.angle, startX: _p10.startX, startY: _p10.startY, initialLineLength: _p10.initialLineLength, axiom: _p10.axiom, rules: _p10.rules});
-					msg = _v68;
-					model = _v69;
+						{angle: preset.angle, startX: preset.startX, startY: preset.startY, initialLineLength: preset.initialLineLength, axiom: preset.axiom, rules: preset.rules});
+					msg = _v69;
+					model = _v70;
 					continue update;
 			}
 		}
 	});
 var _user$project$Main$init = A2(
 	_user$project$Main$update,
-	_user$project$Main$SetPreset(_user$project$Main$presetTree),
+	_user$project$Main$SetPreset('presetTree'),
 	_user$project$Main$initialModel);
 var _user$project$Main$SetIterations = function (a) {
 	return {ctor: 'SetIterations', _0: a};
@@ -9264,326 +9293,364 @@ var _user$project$Main$view = function (model) {
 	};
 	return A2(
 		_elm_lang$html$Html$div,
-		{ctor: '[]'},
 		{
 			ctor: '::',
-			_0: A4(
-				_user$project$Main$drawLSystem,
-				svgWidth,
-				svgHeight,
-				initialCursor,
-				_user$project$Main$parseInstructions(model.instructions)),
+			_0: _elm_lang$html$Html_Attributes$class('container'),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: _user$project$Main$css('./style.css'),
 			_1: {
 				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$fieldset,
-					{ctor: '[]'},
-					{
-						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$legend,
-							{ctor: '[]'},
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html$text('Control Panel'),
-								_1: {ctor: '[]'}
-							}),
-						_1: {
+				_0: A4(
+					_user$project$Main$drawLSystem,
+					svgWidth,
+					svgHeight,
+					initialCursor,
+					_user$project$Main$parseInstructions(model.instructions)),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$fieldset,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('controlPanel'),
+							_1: {ctor: '[]'}
+						},
+						{
 							ctor: '::',
 							_0: A2(
-								_user$project$Main$radio,
-								'Tree',
-								_user$project$Main$SetPreset(_user$project$Main$presetTree)),
+								_elm_lang$html$Html$legend,
+								{ctor: '[]'},
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html$text('Control Panel'),
+									_1: {ctor: '[]'}
+								}),
 							_1: {
 								ctor: '::',
 								_0: A2(
-									_user$project$Main$radio,
-									'Dragon Curve',
-									_user$project$Main$SetPreset(_user$project$Main$presetDragonCurve)),
+									_elm_lang$html$Html$label,
+									{ctor: '[]'},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text('Presets'),
+										_1: {ctor: '[]'}
+									}),
 								_1: {
 									ctor: '::',
 									_0: A2(
-										_elm_lang$html$Html$label,
+										_elm_lang$html$Html$select,
 										{
 											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$for('iterations'),
-											_1: {ctor: '[]'}
+											_0: _elm_lang$html$Html_Attributes$class('presetSelect'),
+											_1: {
+												ctor: '::',
+												_0: A2(
+													_elm_lang$html$Html_Events$on,
+													'change',
+													A2(_elm_lang$core$Json_Decode$map, _user$project$Main$SetPreset, _elm_lang$html$Html_Events$targetValue)),
+												_1: {ctor: '[]'}
+											}
 										},
 										{
 											ctor: '::',
-											_0: _elm_lang$html$Html$text(
-												A2(
-													_elm_lang$core$Basics_ops['++'],
-													'Iterations: ',
-													_elm_lang$core$Basics$toString(model.iterations))),
-											_1: {ctor: '[]'}
-										}),
-									_1: {
-										ctor: '::',
-										_0: A2(
-											_elm_lang$html$Html$input,
-											{
-												ctor: '::',
-												_0: _elm_lang$html$Html_Attributes$type_('range'),
-												_1: {
-													ctor: '::',
-													_0: _elm_lang$html$Html_Attributes$defaultValue('0'),
-													_1: {
-														ctor: '::',
-														_0: _elm_lang$html$Html_Attributes$value(
-															_elm_lang$core$Basics$toString(model.iterations)),
-														_1: {
-															ctor: '::',
-															_0: _elm_lang$html$Html_Attributes$min('0'),
-															_1: {
-																ctor: '::',
-																_0: _elm_lang$html$Html_Attributes$max('15'),
-																_1: {
-																	ctor: '::',
-																	_0: _elm_lang$html$Html_Attributes$name('iterations'),
-																	_1: {
-																		ctor: '::',
-																		_0: _elm_lang$html$Html_Events$onInput(_user$project$Main$SetIterations),
-																		_1: {ctor: '[]'}
-																	}
-																}
-															}
-														}
-													}
-												}
-											},
-											{ctor: '[]'}),
-										_1: {
-											ctor: '::',
 											_0: A2(
-												_elm_lang$html$Html$label,
+												_elm_lang$html$Html$option,
 												{
 													ctor: '::',
-													_0: _elm_lang$html$Html_Attributes$for('axiom'),
+													_0: _elm_lang$html$Html_Attributes$value('presetTree'),
 													_1: {ctor: '[]'}
 												},
 												{
 													ctor: '::',
-													_0: _elm_lang$html$Html$text('Axiom'),
+													_0: _elm_lang$html$Html$text('Tree'),
 													_1: {ctor: '[]'}
 												}),
 											_1: {
 												ctor: '::',
 												_0: A2(
-													_elm_lang$html$Html$input,
+													_elm_lang$html$Html$option,
 													{
 														ctor: '::',
-														_0: _elm_lang$html$Html_Attributes$type_('text'),
-														_1: {
-															ctor: '::',
-															_0: _elm_lang$html$Html_Attributes$value(model.axiom),
-															_1: {
-																ctor: '::',
-																_0: _elm_lang$html$Html_Attributes$name('axiom'),
-																_1: {
-																	ctor: '::',
-																	_0: _elm_lang$html$Html_Events$onInput(_user$project$Main$SetAxiom),
-																	_1: {ctor: '[]'}
-																}
-															}
-														}
+														_0: _elm_lang$html$Html_Attributes$value('presetDragonCurve'),
+														_1: {ctor: '[]'}
 													},
-													{ctor: '[]'}),
-												_1: {
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html$text('Dragon Curve'),
+														_1: {ctor: '[]'}
+													}),
+												_1: {ctor: '[]'}
+											}
+										}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_elm_lang$html$Html$label,
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html_Attributes$for('iterations'),
+												_1: {ctor: '[]'}
+											},
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html$text(
+													A2(
+														_elm_lang$core$Basics_ops['++'],
+														'Iterations: ',
+														_elm_lang$core$Basics$toString(model.iterations))),
+												_1: {ctor: '[]'}
+											}),
+										_1: {
+											ctor: '::',
+											_0: A2(
+												_elm_lang$html$Html$input,
+												{
 													ctor: '::',
-													_0: A2(
-														_elm_lang$html$Html$label,
-														{
-															ctor: '::',
-															_0: _elm_lang$html$Html_Attributes$for('angle'),
-															_1: {ctor: '[]'}
-														},
-														{
-															ctor: '::',
-															_0: _elm_lang$html$Html$text('Initial Angle'),
-															_1: {ctor: '[]'}
-														}),
+													_0: _elm_lang$html$Html_Attributes$type_('range'),
 													_1: {
 														ctor: '::',
-														_0: A2(
-															_elm_lang$html$Html$input,
-															{
+														_0: _elm_lang$html$Html_Attributes$defaultValue('0'),
+														_1: {
+															ctor: '::',
+															_0: _elm_lang$html$Html_Attributes$value(
+																_elm_lang$core$Basics$toString(model.iterations)),
+															_1: {
 																ctor: '::',
-																_0: _elm_lang$html$Html_Attributes$type_('text'),
+																_0: _elm_lang$html$Html_Attributes$min('0'),
 																_1: {
 																	ctor: '::',
-																	_0: _elm_lang$html$Html_Attributes$value(
-																		_elm_lang$core$Basics$toString(model.angle)),
+																	_0: _elm_lang$html$Html_Attributes$max('15'),
 																	_1: {
 																		ctor: '::',
-																		_0: _elm_lang$html$Html_Attributes$name('angle'),
+																		_0: _elm_lang$html$Html_Attributes$name('iterations'),
 																		_1: {
 																			ctor: '::',
-																			_0: _elm_lang$html$Html_Events$onInput(_user$project$Main$SetAngle),
+																			_0: _elm_lang$html$Html_Events$onInput(_user$project$Main$SetIterations),
 																			_1: {ctor: '[]'}
 																		}
 																	}
 																}
+															}
+														}
+													}
+												},
+												{ctor: '[]'}),
+											_1: {
+												ctor: '::',
+												_0: A2(
+													_elm_lang$html$Html$label,
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html_Attributes$for('axiom'),
+														_1: {ctor: '[]'}
+													},
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html$text('Axiom'),
+														_1: {ctor: '[]'}
+													}),
+												_1: {
+													ctor: '::',
+													_0: A2(
+														_elm_lang$html$Html$input,
+														{
+															ctor: '::',
+															_0: _elm_lang$html$Html_Attributes$type_('text'),
+															_1: {
+																ctor: '::',
+																_0: _elm_lang$html$Html_Attributes$value(model.axiom),
+																_1: {
+																	ctor: '::',
+																	_0: _elm_lang$html$Html_Attributes$name('axiom'),
+																	_1: {
+																		ctor: '::',
+																		_0: _elm_lang$html$Html_Events$onInput(_user$project$Main$SetAxiom),
+																		_1: {ctor: '[]'}
+																	}
+																}
+															}
+														},
+														{ctor: '[]'}),
+													_1: {
+														ctor: '::',
+														_0: A2(
+															_elm_lang$html$Html$label,
+															{
+																ctor: '::',
+																_0: _elm_lang$html$Html_Attributes$for('angle'),
+																_1: {ctor: '[]'}
 															},
-															{ctor: '[]'}),
+															{
+																ctor: '::',
+																_0: _elm_lang$html$Html$text('Initial Angle'),
+																_1: {ctor: '[]'}
+															}),
 														_1: {
 															ctor: '::',
 															_0: A2(
-																_elm_lang$html$Html$label,
+																_elm_lang$html$Html$input,
 																{
 																	ctor: '::',
-																	_0: _elm_lang$html$Html_Attributes$for('length'),
-																	_1: {ctor: '[]'}
+																	_0: _elm_lang$html$Html_Attributes$type_('text'),
+																	_1: {
+																		ctor: '::',
+																		_0: _elm_lang$html$Html_Attributes$value(
+																			_elm_lang$core$Basics$toString(model.angle)),
+																		_1: {
+																			ctor: '::',
+																			_0: _elm_lang$html$Html_Attributes$name('angle'),
+																			_1: {
+																				ctor: '::',
+																				_0: _elm_lang$html$Html_Events$onInput(_user$project$Main$SetAngle),
+																				_1: {ctor: '[]'}
+																			}
+																		}
+																	}
 																},
-																{
-																	ctor: '::',
-																	_0: _elm_lang$html$Html$text('Initial Length'),
-																	_1: {ctor: '[]'}
-																}),
+																{ctor: '[]'}),
 															_1: {
 																ctor: '::',
 																_0: A2(
-																	_elm_lang$html$Html$input,
+																	_elm_lang$html$Html$label,
 																	{
 																		ctor: '::',
-																		_0: _elm_lang$html$Html_Attributes$type_('text'),
-																		_1: {
-																			ctor: '::',
-																			_0: _elm_lang$html$Html_Attributes$value(
-																				_elm_lang$core$Basics$toString(model.initialLineLength)),
-																			_1: {
-																				ctor: '::',
-																				_0: _elm_lang$html$Html_Attributes$name('length'),
-																				_1: {
-																					ctor: '::',
-																					_0: _elm_lang$html$Html_Events$onInput(_user$project$Main$SetInitialLength),
-																					_1: {ctor: '[]'}
-																				}
-																			}
-																		}
+																		_0: _elm_lang$html$Html_Attributes$for('length'),
+																		_1: {ctor: '[]'}
 																	},
-																	{ctor: '[]'}),
+																	{
+																		ctor: '::',
+																		_0: _elm_lang$html$Html$text('Initial Length'),
+																		_1: {ctor: '[]'}
+																	}),
 																_1: {
 																	ctor: '::',
 																	_0: A2(
-																		_elm_lang$html$Html$label,
+																		_elm_lang$html$Html$input,
 																		{
 																			ctor: '::',
-																			_0: _elm_lang$html$Html_Attributes$for('x'),
-																			_1: {ctor: '[]'}
+																			_0: _elm_lang$html$Html_Attributes$type_('text'),
+																			_1: {
+																				ctor: '::',
+																				_0: _elm_lang$html$Html_Attributes$value(
+																					_elm_lang$core$Basics$toString(model.initialLineLength)),
+																				_1: {
+																					ctor: '::',
+																					_0: _elm_lang$html$Html_Attributes$name('length'),
+																					_1: {
+																						ctor: '::',
+																						_0: _elm_lang$html$Html_Events$onInput(_user$project$Main$SetInitialLength),
+																						_1: {ctor: '[]'}
+																					}
+																				}
+																			}
 																		},
-																		{
-																			ctor: '::',
-																			_0: _elm_lang$html$Html$text('Initial X-Coordinate'),
-																			_1: {ctor: '[]'}
-																		}),
+																		{ctor: '[]'}),
 																	_1: {
 																		ctor: '::',
 																		_0: A2(
-																			_elm_lang$html$Html$input,
+																			_elm_lang$html$Html$label,
 																			{
 																				ctor: '::',
-																				_0: _elm_lang$html$Html_Attributes$type_('text'),
-																				_1: {
-																					ctor: '::',
-																					_0: _elm_lang$html$Html_Attributes$value(
-																						_elm_lang$core$Basics$toString(model.startX)),
-																					_1: {
-																						ctor: '::',
-																						_0: _elm_lang$html$Html_Attributes$name('x'),
-																						_1: {
-																							ctor: '::',
-																							_0: _elm_lang$html$Html_Events$onInput(_user$project$Main$SetStartX),
-																							_1: {ctor: '[]'}
-																						}
-																					}
-																				}
+																				_0: _elm_lang$html$Html_Attributes$for('x'),
+																				_1: {ctor: '[]'}
 																			},
-																			{ctor: '[]'}),
+																			{
+																				ctor: '::',
+																				_0: _elm_lang$html$Html$text('Initial X-Coordinate'),
+																				_1: {ctor: '[]'}
+																			}),
 																		_1: {
 																			ctor: '::',
 																			_0: A2(
-																				_elm_lang$html$Html$label,
+																				_elm_lang$html$Html$input,
 																				{
 																					ctor: '::',
-																					_0: _elm_lang$html$Html_Attributes$for('y'),
-																					_1: {ctor: '[]'}
+																					_0: _elm_lang$html$Html_Attributes$type_('text'),
+																					_1: {
+																						ctor: '::',
+																						_0: _elm_lang$html$Html_Attributes$value(
+																							_elm_lang$core$Basics$toString(model.startX)),
+																						_1: {
+																							ctor: '::',
+																							_0: _elm_lang$html$Html_Attributes$name('x'),
+																							_1: {
+																								ctor: '::',
+																								_0: _elm_lang$html$Html_Events$onInput(_user$project$Main$SetStartX),
+																								_1: {ctor: '[]'}
+																							}
+																						}
+																					}
 																				},
-																				{
-																					ctor: '::',
-																					_0: _elm_lang$html$Html$text('Initial Y-Coordinate'),
-																					_1: {ctor: '[]'}
-																				}),
+																				{ctor: '[]'}),
 																			_1: {
 																				ctor: '::',
 																				_0: A2(
-																					_elm_lang$html$Html$input,
+																					_elm_lang$html$Html$label,
 																					{
 																						ctor: '::',
-																						_0: _elm_lang$html$Html_Attributes$type_('text'),
-																						_1: {
-																							ctor: '::',
-																							_0: _elm_lang$html$Html_Attributes$value(
-																								_elm_lang$core$Basics$toString(model.startY)),
-																							_1: {
-																								ctor: '::',
-																								_0: _elm_lang$html$Html_Attributes$name('y'),
-																								_1: {
-																									ctor: '::',
-																									_0: _elm_lang$html$Html_Events$onInput(_user$project$Main$SetStartY),
-																									_1: {ctor: '[]'}
-																								}
-																							}
-																						}
+																						_0: _elm_lang$html$Html_Attributes$for('y'),
+																						_1: {ctor: '[]'}
 																					},
-																					{ctor: '[]'}),
+																					{
+																						ctor: '::',
+																						_0: _elm_lang$html$Html$text('Initial Y-Coordinate'),
+																						_1: {ctor: '[]'}
+																					}),
 																				_1: {
 																					ctor: '::',
 																					_0: A2(
-																						_elm_lang$html$Html$label,
-																						{ctor: '[]'},
+																						_elm_lang$html$Html$input,
 																						{
 																							ctor: '::',
-																							_0: _elm_lang$html$Html$text('Rules'),
-																							_1: {ctor: '[]'}
-																						}),
+																							_0: _elm_lang$html$Html_Attributes$type_('text'),
+																							_1: {
+																								ctor: '::',
+																								_0: _elm_lang$html$Html_Attributes$value(
+																									_elm_lang$core$Basics$toString(model.startY)),
+																								_1: {
+																									ctor: '::',
+																									_0: _elm_lang$html$Html_Attributes$name('y'),
+																									_1: {
+																										ctor: '::',
+																										_0: _elm_lang$html$Html_Events$onInput(_user$project$Main$SetStartY),
+																										_1: {ctor: '[]'}
+																									}
+																								}
+																							}
+																						},
+																						{ctor: '[]'}),
 																					_1: {
 																						ctor: '::',
 																						_0: A2(
-																							_elm_lang$html$Html$ul,
+																							_elm_lang$html$Html$label,
 																							{ctor: '[]'},
-																							A2(
-																								_elm_lang$core$List$map,
-																								function (pair) {
-																									var _p11 = pair;
-																									var key = _p11._0;
-																									var rule = _p11._1;
-																									return A2(
-																										_elm_lang$html$Html$li,
-																										{ctor: '[]'},
-																										{
-																											ctor: '::',
-																											_0: A2(
-																												_elm_lang$html$Html$input,
-																												{
-																													ctor: '::',
-																													_0: _elm_lang$html$Html_Attributes$type_('text'),
-																													_1: {
-																														ctor: '::',
-																														_0: _elm_lang$html$Html_Attributes$value(key),
-																														_1: {
-																															ctor: '::',
-																															_0: _elm_lang$html$Html_Events$onInput(
-																																function (newKey) {
-																																	return _user$project$Main$SetRule(
-																																		{ctor: '_Tuple2', _0: newKey, _1: rule});
-																																}),
-																															_1: {ctor: '[]'}
-																														}
-																													}
-																												},
-																												{ctor: '[]'}),
-																											_1: {
+																							{
+																								ctor: '::',
+																								_0: _elm_lang$html$Html$text('Rules'),
+																								_1: {ctor: '[]'}
+																							}),
+																						_1: {
+																							ctor: '::',
+																							_0: A2(
+																								_elm_lang$html$Html$ul,
+																								{
+																									ctor: '::',
+																									_0: _elm_lang$html$Html_Attributes$class('ruleList'),
+																									_1: {ctor: '[]'}
+																								},
+																								A2(
+																									_elm_lang$core$List$map,
+																									function (pair) {
+																										var _p11 = pair;
+																										var key = _p11._0;
+																										var rule = _p11._1;
+																										return A2(
+																											_elm_lang$html$Html$li,
+																											{ctor: '[]'},
+																											{
 																												ctor: '::',
 																												_0: A2(
 																													_elm_lang$html$Html$input,
@@ -9592,15 +9659,19 @@ var _user$project$Main$view = function (model) {
 																														_0: _elm_lang$html$Html_Attributes$type_('text'),
 																														_1: {
 																															ctor: '::',
-																															_0: _elm_lang$html$Html_Attributes$value(rule),
+																															_0: _elm_lang$html$Html_Attributes$class('ruleKey'),
 																															_1: {
 																																ctor: '::',
-																																_0: _elm_lang$html$Html_Events$onInput(
-																																	function (newRule) {
-																																		return _user$project$Main$SetRule(
-																																			{ctor: '_Tuple2', _0: key, _1: newRule});
-																																	}),
-																																_1: {ctor: '[]'}
+																																_0: _elm_lang$html$Html_Attributes$value(key),
+																																_1: {
+																																	ctor: '::',
+																																	_0: _elm_lang$html$Html_Events$onInput(
+																																		function (newKey) {
+																																			return _user$project$Main$SetRule(
+																																				{ctor: '_Tuple2', _0: newKey, _1: rule});
+																																		}),
+																																	_1: {ctor: '[]'}
+																																}
 																															}
 																														}
 																													},
@@ -9608,52 +9679,64 @@ var _user$project$Main$view = function (model) {
 																												_1: {
 																													ctor: '::',
 																													_0: A2(
-																														_elm_lang$html$Html$button,
+																														_elm_lang$html$Html$input,
 																														{
 																															ctor: '::',
-																															_0: _elm_lang$html$Html_Events$onClick(
-																																_user$project$Main$DeleteRule(key)),
-																															_1: {ctor: '[]'}
+																															_0: _elm_lang$html$Html_Attributes$type_('text'),
+																															_1: {
+																																ctor: '::',
+																																_0: _elm_lang$html$Html_Attributes$class('ruleValue'),
+																																_1: {
+																																	ctor: '::',
+																																	_0: _elm_lang$html$Html_Attributes$value(rule),
+																																	_1: {
+																																		ctor: '::',
+																																		_0: _elm_lang$html$Html_Events$onInput(
+																																			function (newRule) {
+																																				return _user$project$Main$SetRule(
+																																					{ctor: '_Tuple2', _0: key, _1: newRule});
+																																			}),
+																																		_1: {ctor: '[]'}
+																																	}
+																																}
+																															}
 																														},
-																														{
-																															ctor: '::',
-																															_0: _elm_lang$html$Html$text('Delete Rule'),
-																															_1: {ctor: '[]'}
-																														}),
-																													_1: {ctor: '[]'}
+																														{ctor: '[]'}),
+																													_1: {
+																														ctor: '::',
+																														_0: A2(
+																															_elm_lang$html$Html$button,
+																															{
+																																ctor: '::',
+																																_0: _elm_lang$html$Html_Events$onClick(
+																																	_user$project$Main$DeleteRule(key)),
+																																_1: {
+																																	ctor: '::',
+																																	_0: _elm_lang$html$Html_Attributes$class('ruleButton'),
+																																	_1: {ctor: '[]'}
+																																}
+																															},
+																															{
+																																ctor: '::',
+																																_0: _elm_lang$html$Html$text('Delete Rule'),
+																																_1: {ctor: '[]'}
+																															}),
+																														_1: {ctor: '[]'}
+																													}
 																												}
-																											}
-																										});
-																								},
-																								_elm_lang$core$Dict$toList(model.rules))),
-																						_1: {
-																							ctor: '::',
-																							_0: A2(
-																								_elm_lang$html$Html$label,
-																								{ctor: '[]'},
-																								{
-																									ctor: '::',
-																									_0: _elm_lang$html$Html$text('Add New Rule'),
-																									_1: {ctor: '[]'}
-																								}),
+																											});
+																									},
+																									_elm_lang$core$Dict$toList(model.rules))),
 																							_1: {
 																								ctor: '::',
 																								_0: A2(
-																									_elm_lang$html$Html$input,
+																									_elm_lang$html$Html$label,
+																									{ctor: '[]'},
 																									{
 																										ctor: '::',
-																										_0: _elm_lang$html$Html_Attributes$type_('text'),
-																										_1: {
-																											ctor: '::',
-																											_0: _elm_lang$html$Html_Attributes$value(model.newRuleKey),
-																											_1: {
-																												ctor: '::',
-																												_0: _elm_lang$html$Html_Events$onInput(_user$project$Main$NewRuleKey),
-																												_1: {ctor: '[]'}
-																											}
-																										}
-																									},
-																									{ctor: '[]'}),
+																										_0: _elm_lang$html$Html$text('Add New Rule'),
+																										_1: {ctor: '[]'}
+																									}),
 																								_1: {
 																									ctor: '::',
 																									_0: A2(
@@ -9663,11 +9746,15 @@ var _user$project$Main$view = function (model) {
 																											_0: _elm_lang$html$Html_Attributes$type_('text'),
 																											_1: {
 																												ctor: '::',
-																												_0: _elm_lang$html$Html_Attributes$value(model.newRuleValue),
+																												_0: _elm_lang$html$Html_Attributes$class('ruleKey'),
 																												_1: {
 																													ctor: '::',
-																													_0: _elm_lang$html$Html_Events$onInput(_user$project$Main$NewRuleValue),
-																													_1: {ctor: '[]'}
+																													_0: _elm_lang$html$Html_Attributes$value(model.newRuleKey),
+																													_1: {
+																														ctor: '::',
+																														_0: _elm_lang$html$Html_Events$onInput(_user$project$Main$NewRuleKey),
+																														_1: {ctor: '[]'}
+																													}
 																												}
 																											}
 																										},
@@ -9675,18 +9762,45 @@ var _user$project$Main$view = function (model) {
 																									_1: {
 																										ctor: '::',
 																										_0: A2(
-																											_elm_lang$html$Html$button,
+																											_elm_lang$html$Html$input,
 																											{
 																												ctor: '::',
-																												_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$AddNewRule),
-																												_1: {ctor: '[]'}
+																												_0: _elm_lang$html$Html_Attributes$type_('text'),
+																												_1: {
+																													ctor: '::',
+																													_0: _elm_lang$html$Html_Attributes$class('ruleValue'),
+																													_1: {
+																														ctor: '::',
+																														_0: _elm_lang$html$Html_Attributes$value(model.newRuleValue),
+																														_1: {
+																															ctor: '::',
+																															_0: _elm_lang$html$Html_Events$onInput(_user$project$Main$NewRuleValue),
+																															_1: {ctor: '[]'}
+																														}
+																													}
+																												}
 																											},
-																											{
-																												ctor: '::',
-																												_0: _elm_lang$html$Html$text('Add Rule'),
-																												_1: {ctor: '[]'}
-																											}),
-																										_1: {ctor: '[]'}
+																											{ctor: '[]'}),
+																										_1: {
+																											ctor: '::',
+																											_0: A2(
+																												_elm_lang$html$Html$button,
+																												{
+																													ctor: '::',
+																													_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$AddNewRule),
+																													_1: {
+																														ctor: '::',
+																														_0: _elm_lang$html$Html_Attributes$class('ruleButton'),
+																														_1: {ctor: '[]'}
+																													}
+																												},
+																												{
+																													ctor: '::',
+																													_0: _elm_lang$html$Html$text('Add Rule'),
+																													_1: {ctor: '[]'}
+																												}),
+																											_1: {ctor: '[]'}
+																										}
 																									}
 																								}
 																							}
@@ -9706,9 +9820,9 @@ var _user$project$Main$view = function (model) {
 									}
 								}
 							}
-						}
-					}),
-				_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				}
 			}
 		});
 };
